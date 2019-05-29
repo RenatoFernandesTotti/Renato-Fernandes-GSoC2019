@@ -9,6 +9,7 @@
   "author": "Renato Fernandes",
   "license": "ISC",
   "dependencies": {
+    "@types/node": "^12.0.3",
     "datagsoc": "file:lib",
     "express": "^4.17.1"
   }
