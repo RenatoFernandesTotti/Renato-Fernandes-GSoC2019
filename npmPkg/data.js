@@ -12,6 +12,7 @@ const hexToUtf8 = convert('hex', 'utf8')
 //Packages viariables
 var demoInterval = null;
 var mockSensorsId = []
+var mockSensorsNames=[]
 var schema;
 var template = {
     host: '',
@@ -74,26 +75,25 @@ exports.getInfo = (name) => {
     })
 }
 
-exports.registerSensor = (username,{
-    name= "Default sensor n: ",
-    description= "Default description",
-    unit= "To be set",
-    lat= 0,
-    lon= 0,
-    imgId= 1,
+exports.registerSensor = (username, {
+    name = "Default sensor n: " +  Math.random(),
+    description = "Default description",
+    unit = "To be set",
+    lat = 0,
+    lon = 0,
+    imgId = 1,
 } = {}) => {
     return new Promise((resolve, reject) => {
         if (exports.con == "null") {
             reject("Not connected to a database")
             return
         }
-        if(username==undefined)
-        {
+        if (username == undefined) {
             reject('No username set')
             return
         }
         getUserId(username).then(userId => {
-            connetion.query("insert into tbSensors (name,description,register,lastUpdate,unit,location,imgId,userId) values(?,?,now(),now(),?,ST_GeomFromText('POINT(? ?)', 4326),?,?)", [name + Math.random(), description, unit, lon, lat,imgId,userId], function (error, results, fields) {
+            connetion.query("insert into tbSensors (name,description,register,lastUpdate,unit,location,imgId,userId) values(?,?,now(),now(),?,ST_GeomFromText('POINT(? ?)', 4326),?,?)", [name, description, unit, lon, lat, imgId, userId], function (error, results, fields) {
                 if (error) {
                     reject(error);
                     return
@@ -106,14 +106,14 @@ exports.registerSensor = (username,{
 }
 
 exports.registerUser = ({
-    userName=null,
-    userPass=null,
-    userMail=null
-}={}) => {    
+    userName = null,
+    userPass = null,
+    userMail = null
+} = {}) => {
     return new Promise((resolve, reject) => {
         var vars = []
         var hash =
-        vars.push(userName)
+            vars.push(userName)
         vars.push(userMail)
         vars.push(crypto.createHash('sha512').update(userPass).digest('hex'))
         connetion.query("insert into users (userName,userMail,userPass) values(?,?,?)", vars, function (error, results, fields) {
@@ -127,7 +127,7 @@ exports.registerUser = ({
     })
 }
 
-exports.registerRead = (name, value, hex = false, decimal) => {
+exports.registerRead = (name, value, decimal, hex = false) => {
     return new Promise((resolve, reject) => {
         console.log('Before:   Name:' + name + "\n value:" + value + "\nHex:" + hex);
         hex = Boolean(hex)
@@ -226,9 +226,18 @@ exports.readSensor = (name) => {
     return new Promise((resolve, reject) => {
         getSensorID(name).then(id => {
             connetion.query('select T1.sensorID, T1.unit, T2.value, T2.date  from tbValues T2 inner join tbSensors as T1 on T2.sensorID = T1.sensorID where T1.sensorID = ?', [id], (error, results, fields) => {
-                if (error) reject(error)
-                if (results.length == 0)
+                if (error) {
+                    console.log(error);
+                    
+                    reject(error)
+                    return
+                }
+                if (results.length == 0) {
+                    console.log("Not found");
+                    
                     reject('No readings were found for the sensor: ' + name)
+                    return
+                }
                 resolve(results)
             })
         })
@@ -241,7 +250,7 @@ exports.generateKml = () => {
     })
 }
 
-exports.startDemo = (sensorNumber, interval = 10) => {
+exports.startDemo = (sensorNumber,user, interval = 10) => {
     return new Promise((resolve, reject) => {
         if (sensorNumber == 0) {
             reject("Sensor number can't be 0")
@@ -252,27 +261,34 @@ exports.startDemo = (sensorNumber, interval = 10) => {
             console.log({
                 name: "Mock sensor " + index,
                 description: "Mock sensor for a demo presentation",
-                mock: true,
                 unit: [Math.floor(Math.random() * unitArray.length)]
             });
-            exports.registerSensor({
+            mockSensorsNames.push("Mock sensor " + index)
+            exports.registerSensor(user,{
                     name: "Mock sensor " + index,
                     description: "Mock sensor for a demo presentation",
                     unit: unitArray[Math.floor(Math.random() * unitArray.length)]
                 })
                 .then(results => {
+                    console.log(index);
+                    
+                    console.log(results);
+                    
                     mockSensorsId.push(results.insertId)
                 })
                 .catch(err => {
                     console.log(err);
                     reject("A error has ocurred in the mock sensors insertion on the Database: " + err)
                 })
-            console.log(mockSensorsId);
+
 
         }
+
         demoInterval = setInterval(() => {
-            exports.registerRead('Mock sensor ' + mockSensorsId[Math.floor(Math.random() * mockSensorsId.length)], Math.floor(Math.random() * 5000))
+            exports.registerRead(mockSensorsNames[Math.floor(Math.random() * mockSensorsId.length)], Math.floor(Math.random() * 5000))
+            console.log(mockSensorsNames);
         }, interval * 1000)
+
     })
 }
 
@@ -323,9 +339,9 @@ exports.getSensorPosition = (name) => {
     })
 }
 
-exports.getUser= (param)=>{
-    return new Promise ((resolve,reject)=>{
-        connetion.query('Select * from users where userName = ? or userMail = ? or idUsers = ?',[param,param,param], function (error, results, fields){
+exports.getUser = (param) => {
+    return new Promise((resolve, reject) => {
+        connetion.query('Select * from users where userName = ? or userMail = ? or idUsers = ?', [param, param, param], function (error, results, fields) {
             if (error) {
                 reject(error)
                 return

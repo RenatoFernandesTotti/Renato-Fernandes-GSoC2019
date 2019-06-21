@@ -1,8 +1,8 @@
 const router = require('express').Router()
-const GSoC = require('datagsoc') 
+const GSoC = require('liquidsensors') 
 var keys = require('../../keys.min')
 const bodyParser = require('body-parser')
-const response = require('datagsoc/response')
+const response = require('../../lib/response')
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
 GSoC.createConnection(keys)
@@ -32,8 +32,6 @@ router.get('/getAllSensors',(req,res)=>{
     })
 })
 router.get('/getSensorInfo',(req,res)=>{
-    console.log(req.query);
-    
     GSoC.getInfo(req.query.name).then(result=>{
         response.send(res,{code:200,result:result[0]})
         
@@ -46,6 +44,8 @@ router.get('/readSensor',(req,res)=>{
         console.log(result);
         response.send(res,{code:200,result:result})
         
+    }).catch(err=>{
+        response.send(res,{code:500,error:err})
     })
 })
 

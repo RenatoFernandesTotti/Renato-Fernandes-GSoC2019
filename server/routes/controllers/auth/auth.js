@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const GSoC = require('datagsoc')
+const GSoC = require('liquidsensors')
 var keys = require('../../../keys.min')
 const bodyParser = require('body-parser')
 const axios = require('axios')
