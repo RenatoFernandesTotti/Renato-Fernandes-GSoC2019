@@ -8,5 +8,3 @@ Javascript library to acquire and display data from sensors
 
 
 ------
-
-

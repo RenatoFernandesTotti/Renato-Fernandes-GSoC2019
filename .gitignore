@@ -61,3 +61,11 @@ typings/
 .next
 
 keys\.json
+
+Acesso_MARC\.py
+
+facensKey\.min\.js
+
+sessions/
+
+keys\.min\.js
