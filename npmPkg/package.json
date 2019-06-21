@@ -1,6 +1,6 @@
 {
   "name": "liquidsensors",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Npm package to control,save,retrieve and display data from sensors integrating the liquid galaxy pataform",
   "main": "data.js",
   "scripts": {
@@ -15,5 +15,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/RenatoFernandesTotti/Renato-Fernandes-GSoC2019"
-  }
+  },
+  "url": "https://github.com/RenatoFernandesTotti/Renato-Fernandes-GSoC2019/issues",
+  "email": "renatoaure@outlook.com",
+  "keywords": [
+    "Sensor",
+    "liquid galaxy",
+    "galaxy",
+    "database"
+  ]
 }
