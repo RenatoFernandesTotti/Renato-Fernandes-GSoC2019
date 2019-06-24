@@ -17,8 +17,8 @@ router.use('/data/*', (req, res, next) => {
 
 )
 
-router.post('/data/registerRead',(req,res)=>{
-    GSoC.registerRead(req.body.name,req.body.val,req.body.hex,req.body.decimal).then(result=>{
+router.post('/registerRead',(req,res)=>{
+    GSoC.registerRead(req.body.name,req.body.val,req.body.decimal,req.body.hex).then(result=>{
         response.send(res,{code:200})
     })
 
