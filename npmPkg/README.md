@@ -42,7 +42,7 @@ editSensor = (name, info = {
 
 #### <span style="color:red">generateKml</span>
 
-*to be implememted*
+*to be implemented*
 
 ```javascript
 generateKml = ()
