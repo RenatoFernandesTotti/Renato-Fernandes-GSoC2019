@@ -18,5 +18,5 @@ app.use(require('./routes/router'))
 var server = http.createServer(app);
 
 server.listen(8888, () => {
-    console.log('vambora no 8888')
+
 })

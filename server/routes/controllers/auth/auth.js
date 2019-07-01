@@ -24,22 +24,22 @@ passport.use(new LocalStrategy({
         user(name)
             .then(res => {
                 const user = res
-                console.log("Passport user")
-                console.log(user);
-                
-                
+
+
+
+
                 if (!user) {
                     return done(null, false, {
                         message: 'Invalid credentials.\n'
                     });
                 }
-                
+
                 if (crypto.createHash('sha512').update(password).digest('hex') != user.userPass) {
                     return done(null, false, {
                         message: 'Invalid credentials.\n'
                     });
                 }
-                
+
                 return done(null, user);
             })
             .catch(error => done(error));
@@ -56,9 +56,9 @@ passport.deserializeUser((id, done) => {
 
     user(id)
         .then(res => {
-            console.log("Deserialize");
-            
-            console.log(res);
+
+
+
 
             done(null, res)
         })
@@ -85,7 +85,7 @@ router.use(passport.session());
 router.get('/auth/logout', (req, res) => {
     req.logout();
 
-    console.log("logged out")
+
 
     return res.send();
 })
@@ -93,7 +93,7 @@ router.get('/auth/logout', (req, res) => {
 router.post('/auth/login', (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
 
-        console.log(info);
+
         if (info) {
 
             return res.status(418).send(info.message)
@@ -117,12 +117,19 @@ router.post('/auth/login', (req, res, next) => {
     })(req, res, next);
 })
 
-router.post('/auth/register',(req,res)=>{
-    GSoC.registerUser({userName:req.body.name,userMail:req.body.email,userPass:req.body.password}).then(result=>{
+router.post('/auth/register', (req, res) => {
+    GSoC.registerUser({
+        userName: req.body.name,
+        userMail: req.body.email,
+        userPass: req.body.password
+    }).then(result => {
 
-        axios.post('http://localhost:8888/auth/login',{name:req.body.name,password:req.body.password}).then(result=>{
-            console.log(result);
-            if(result.status == 200)
+        axios.post('http://localhost:8888/auth/login', {
+            name: req.body.name,
+            password: req.body.password
+        }).then(result => {
+
+            if (result.status == 200)
                 res.status(200).send("Registered!")
         })
     })
@@ -131,13 +138,13 @@ router.post('/auth/register',(req,res)=>{
 
 const user = (name) => {
     return new Promise((resolve, reject) => {
-        console.log("Getting user with: "+name);
-        
+
+
         GSoC.getUser(name).then(result => {
-            console.log("Get user result:");
-            console.log(result);
-            
-            
+
+
+
+
             resolve(result)
 
         })

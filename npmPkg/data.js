@@ -12,7 +12,7 @@ const hexToUtf8 = convert('hex', 'utf8')
 //Packages viariables
 var demoInterval = null;
 var mockSensorsId = []
-var mockSensorsNames=[]
+var mockSensorsNames = []
 var schema;
 var template = {
     host: '',
@@ -41,17 +41,17 @@ exports.createConnection = async (config = template) => {
             }
             connetion.query('Select 1 from tbSensors', (err) => {
                 if (err) {
-                    console.log('No tables detected, creating defaults');
+
                     file = file.read().toString()
-                    console.log(file);
+
 
                     setTimeout(() => {
                         connetion.query(file)
-                        console.log('Done!');
+
                         resolve()
                     }, 3000)
                 } else {
-                    console.log('Everything ok, continuing....');
+
                     resolve()
                 }
             })
@@ -76,7 +76,7 @@ exports.getInfo = (name) => {
 }
 
 exports.registerSensor = (username, {
-    name = "Default sensor n: " +  Math.random(),
+    name = "Default sensor n: " + Math.random(),
     description = "Default description",
     unit = "To be set",
     lat = 0,
@@ -98,7 +98,7 @@ exports.registerSensor = (username, {
                     reject(error);
                     return
                 }
-                console.log(results);
+
                 resolve(results)
             });
         })
@@ -121,7 +121,7 @@ exports.registerUser = ({
                 reject(error);
                 return
             }
-            console.log(results);
+
             resolve(results)
         })
     })
@@ -129,14 +129,14 @@ exports.registerUser = ({
 
 exports.registerRead = (name, value, decimal, hex = false) => {
     return new Promise((resolve, reject) => {
-        console.log('Before:   Name:' + name + "\n value:" + value + "\nHex:" + hex);
+
         hex = Boolean(hex)
         if (exports.con == "null") {
             reject("Not connected to a database")
         }
         if (hex) {
             value = (parseFloat(hexToUtf8(value.toString())).toFixed(decimal)) / Math.pow(10, decimal)
-            console.log("After conversion: " + value);
+
 
         }
         getSensorID(name).then(id => {
@@ -156,7 +156,7 @@ exports.registerRead = (name, value, decimal, hex = false) => {
                 });
             })
             .catch(() => {
-                console.log('Sensor do not exist, registering it for you,remember to update the position and unit later \n  Name:' + name + "\n value:" + value + "\nHex:" + hex);
+
                 exports.registerSensor({
                     name: name,
                     lat: 0,
@@ -209,9 +209,9 @@ exports.editSensor = (name, info = {
                 updateQuery += 'lon = ? ,'
                 values.push(info.lon)
             }
-            console.log(values);
+
             updateQuery = updateQuery.substring(0, updateQuery.length - 1);
-            console.log(updateQuery);
+
             updateQuery += " where sensorID = ?"
             values.push(id)
             connetion.query(updateQuery, values, (error, results, fields) => {
@@ -222,22 +222,59 @@ exports.editSensor = (name, info = {
     })
 }
 
-exports.readSensor = (name) => {
+exports.readSensor = (name, datespan = null) => {
     return new Promise((resolve, reject) => {
+        
         getSensorID(name).then(id => {
-            connetion.query('select T1.sensorID, T1.unit, T2.value, T2.date  from tbValues T2 inner join tbSensors as T1 on T2.sensorID = T1.sensorID where T1.sensorID = ?', [id], (error, results, fields) => {
+            let date = getDate()
+            console.log(date);
+            
+            let query = "select T1.sensorID, T1.unit, T2.value, T2.date  from tbValues T2 inner join tbSensors as T1 on T2.sensorID = T1.sensorID where T1.sensorID = ?"
+            switch (datespan) {
+                case '1y':
+                    query += " and year(T2.date) between " + (date[2] - 1) + " and " + date[2]
+                    break;
+                case '6m':
+                    var last = new Date()
+                    last.setMonth(date[1] - 6)
+                    query += " and month(T2.date) between " + (last.getMonth() + 1) + " and " + date[1]
+                    break;
+                case '1m':
+                    var last = new Date()
+                    last.setMonth(date[1] - 2)
+                    console.log(last.getMonth());
+                    query += " and month(T2.date) between " + (last.getMonth() + 1) + " and " + date[1]
+                    break;
+                case '1w':
+                    var last = new Date()
+                    last.setDate(date[0] - 7)
+                    query += " and T2.date between " + "'" +last.toISOString() + "'" + " and " + "'"+new Date().toISOString()+ "'"
+                    break;
+                case '1d':
+                    var last = new Date()
+                    last.setDate(date[0] - 1)
+                    query += " and T2.date between " + "'" +last.toISOString() + "'" + " and " + "'"+new Date().toISOString()+ "'"
+                    break;
+                default:
+                    break;
+            }
+            console.log(query);
+            query += ' order by T2.date'
+            connetion.query(query, [id], (error, results, fields) => {
                 if (error) {
-                    console.log(error);
-                    
+
+
                     reject(error)
                     return
                 }
                 if (results.length == 0) {
-                    console.log("Not found");
-                    
+
+
                     reject('No readings were found for the sensor: ' + name)
                     return
                 }
+                console.log(results);
+                
                 resolve(results)
             })
         })
@@ -250,47 +287,36 @@ exports.generateKml = () => {
     })
 }
 
-exports.startDemo = (sensorNumber,user, interval = 10) => {
+exports.startDemo = (sensorNumber, user, interval = 10) => {
     return new Promise((resolve, reject) => {
         if (sensorNumber == 0) {
             reject("Sensor number can't be 0")
             return
         }
         var unitArray = ['Pascal', 'CO2', 'Nitrogen', 'Air speed', 'Soil Moisture']
-        for (let index = 0; index < sensorNumber; index++) {
-            console.log({
+        mockSensorsNames.push("Mock sensor " + index)
+        exports.registerSensor(user, {
                 name: "Mock sensor " + index,
                 description: "Mock sensor for a demo presentation",
-                unit: [Math.floor(Math.random() * unitArray.length)]
-            });
-            mockSensorsNames.push("Mock sensor " + index)
-            exports.registerSensor(user,{
-                    name: "Mock sensor " + index,
-                    description: "Mock sensor for a demo presentation",
-                    unit: unitArray[Math.floor(Math.random() * unitArray.length)]
-                })
-                .then(results => {
-                    console.log(index);
-                    
-                    console.log(results);
-                    
-                    mockSensorsId.push(results.insertId)
-                })
-                .catch(err => {
-                    console.log(err);
-                    reject("A error has ocurred in the mock sensors insertion on the Database: " + err)
-                })
-
-
-        }
-
+                unit: unitArray[Math.floor(Math.random() * unitArray.length)],
+                imgId: Math.floor(Math.random() * 2) + 1
+            })
+            .then(results => {
+                mockSensorsId.push(results.insertId)
+            })
+            .catch(err => {
+                reject("A error has ocurred in the mock sensors insertion on the Database: " + err)
+            })
         demoInterval = setInterval(() => {
             exports.registerRead(mockSensorsNames[Math.floor(Math.random() * mockSensorsId.length)], Math.floor(Math.random() * 5000))
-            console.log(mockSensorsNames);
+
         }, interval * 1000)
 
     })
 }
+
+
+
 
 exports.stopDemo = () => {
     return new Promise((resolve, reject) => {
@@ -332,7 +358,7 @@ exports.getSensorPosition = (name) => {
                         reject(error)
                         return
                     }
-                    console.log([results[0].lat, results[0].lon])
+
                     resolve([results[0].lat, results[0].lon])
                 })
             })
@@ -347,7 +373,7 @@ exports.getUser = (param) => {
                 return
             }
             if (typeof results[0] == 'undefined') {
-                reject("Not found")
+                reject("Not found 1")
                 return
             }
             resolve(results[0])
@@ -366,7 +392,7 @@ const getSensorID = (name) => {
                 return
             }
             if (typeof results[0] == 'undefined') {
-                reject("Not found")
+                reject(" sensor Not found")
                 return
             }
             resolve(results[0].sensorID)
@@ -383,11 +409,20 @@ const getUserId = (name) => {
                 return
             }
             if (typeof results[0] == 'undefined') {
-                reject("Not found")
+                reject("user Not found")
                 return
             }
             resolve(results[0].idUsers)
             return
         })
     })
+}
+
+const getDate = () => {
+    var today = new Date();
+    var dd = today.getDate()
+    var mm = today.getMonth() + 1
+    var yyyy = today.getFullYear();
+
+    return [dd, mm, yyyy]
 }
