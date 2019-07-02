@@ -112,10 +112,13 @@ exports.registerUser = ({
 } = {}) => {
     return new Promise((resolve, reject) => {
         var vars = []
-        var hash =
-            vars.push(userName)
+        var hash =userPass
+        vars.push(userName)
         vars.push(userMail)
-        vars.push(crypto.createHash('sha512').update(userPass).digest('hex'))
+        for (i=0 ; i<100 ; i++) {
+            hash=crypto.createHash('sha512').update(hash).digest('hex')
+        }
+        vars.push(hash)
         connetion.query("insert into users (userName,userMail,userPass) values(?,?,?)", vars, function (error, results, fields) {
             if (error) {
                 reject(error);
@@ -373,7 +376,7 @@ exports.getUser = (param) => {
                 return
             }
             if (typeof results[0] == 'undefined') {
-                reject("Not found 1")
+                reject("User Not found")
                 return
             }
             resolve(results[0])

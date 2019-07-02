@@ -61,7 +61,7 @@ router.get('/readSensor', (req, res) => {
             })
         }).catch(err => {
             console.log(err);
-            
+
             response.send(res, {
                 code: 500,
                 error: err
@@ -76,13 +76,32 @@ router.get('/readSensor', (req, res) => {
 
         }).catch(err => {
             console.log(err);
-            
+
             response.send(res, {
                 code: 500,
                 error: err
             })
         })
     }
+})
+
+router.get('/checkUser', (req, res) => {
+    GSoC.getUser(req.query.username).then(result => {
+            console.log("result");
+
+            response.send(res, {
+                code: 200,
+                messages:[true]
+            })
+        })
+        .catch(err => {
+            console.log(err);
+
+            response.send(res, {
+                code: 200,
+                messages: [false]
+            })
+        })
 })
 
 
