@@ -75,6 +75,18 @@ exports.getInfo = (name) => {
     })
 }
 
+exports.readUserSensors = (name)=>{
+    return new Promise ((resolve,reject)=>{
+        getUserId(name).then(id=>{
+            connetion.query('select * from tbSensors where userID = ?',[id],function (error, results, fields) {
+                if (error) reject(error);
+                resolve(results)
+            })
+        })
+    })
+
+}
+
 exports.registerSensor = (username, {
     name = "Default sensor n: " + Math.random(),
     description = "Default description",
@@ -92,6 +104,10 @@ exports.registerSensor = (username, {
             reject('No username set')
             return
         }
+        console.log(lat);
+        console.log(lon);
+        
+        
         getUserId(username).then(userId => {
             connetion.query("insert into tbSensors (name,description,register,lastUpdate,unit,location,imgId,userId) values(?,?,now(),now(),?,ST_GeomFromText('POINT(? ?)', 4326),?,?)", [name, description, unit, lon, lat, imgId, userId], function (error, results, fields) {
                 if (error) {

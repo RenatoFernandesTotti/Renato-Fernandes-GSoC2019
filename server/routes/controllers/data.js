@@ -3,21 +3,16 @@ const GSoC = require('liquidsensors')
 var keys = require('../../keys.min')
 const bodyParser = require('body-parser')
 const response = require('../../lib/response')
+
+
+
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
     extended: false
 }));
 GSoC.createConnection(keys)
 
-router.use('/data/*', (req, res, next) => {
-        if (!req.isAuthenticated()) {
-            res.status(403).send('You are not authenticated')
-        } else {
-            next()
-        }
-    }
 
-)
 
 router.post('/registerRead', (req, res) => {
     GSoC.registerRead(req.body.name, req.body.val, req.body.decimal, req.body.hex).then(result => {
@@ -91,7 +86,7 @@ router.get('/checkUser', (req, res) => {
 
             response.send(res, {
                 code: 200,
-                messages:[true]
+                messages: [true]
             })
         })
         .catch(err => {
@@ -103,6 +98,8 @@ router.get('/checkUser', (req, res) => {
             })
         })
 })
+
+
 
 
 
