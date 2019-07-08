@@ -191,7 +191,7 @@ router.get('/getusersensors',authMiddleware,(req,res)=>{
 
 router.post('/data/editsensor',authMiddleware, (req, res) => {
     var bd = req.body
-    GSoC.registerSensor(bd.oldname, {
+    GSoC.editSensor(bd.oldname, {
             name: bd.name,
             description: bd.desc,
             imgId: bd.img,
@@ -204,6 +204,8 @@ router.post('/data/editsensor',authMiddleware, (req, res) => {
                 code: 200
             })
         }).catch(err=>{
+            console.log(err);
+            
             response.send(res, {
                 code: 500,
                 error:err

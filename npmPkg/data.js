@@ -224,11 +224,13 @@ exports.editSensor = (name, info = {
                 updateQuery += ' unit = ? ,'
                 values.push(info.unit)
             }
-            if (info.lon != undefined) {
-                updateQuery += 'lon = ? ,'
+            if (info.lon != undefined && info.lat) {
+                updateQuery += "location=ST_GeomFromText('POINT(? ?)', 4326) ,"
                 values.push(info.lon)
+                values.push(info.lat)
             }
-
+            console.log(name);
+            
             updateQuery = updateQuery.substring(0, updateQuery.length - 1);
 
             updateQuery += " where sensorID = ?"
