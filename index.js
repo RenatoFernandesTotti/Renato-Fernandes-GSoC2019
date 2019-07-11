@@ -1,13 +1,8 @@
 const express = require('express')
-//const sql = require('mssql');
 const app = express()
-const facensKeys = require('./facensKey.min')
 const http = require('http');
 var cors = require('cors');
-// const pool = new sql.ConnectionPool(facensKeys)
-// pool.connect()
 
-//app.use(cors({credentials: true, origin: 'http://localhost:8181'}))
 app.use(cors({credentials: true, origin: 'https://gsoc-renatofernandes-2019.herokuapp.com'}))
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
