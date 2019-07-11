@@ -27,7 +27,7 @@ var connetion
 var exports = module.exports = {}
 
 
-exports.createConnection = async (config = template) => {
+exports.createConnection = async (config=undefined) => {
     return new Promise((resolve, reject) => {
         var file = fs.createReadStream(__dirname + '/gsoc.sql')
         schema = config.database
