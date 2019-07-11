@@ -1,5 +1,5 @@
 //Dependancies
-const db = require("mysql")
+const { Pool, Client } = require('pg')
 const fs = require('fs')
 const crypto = require('crypto')
 
@@ -15,12 +15,12 @@ var mockSensorsId = []
 var mockSensorsNames = []
 var schema;
 var template = {
-    host: '',
-    port: 3306,
-    user: '',
-    password: '',
-    database: ''
-}
+    user: 'dbuser',
+    host: 'database.server.com',
+    database: 'mydb',
+    password: 'secretpassword',
+    port: 3211,
+  }
 var connetion
 
 //Export module
@@ -32,14 +32,14 @@ exports.createConnection = async (config = template) => {
         var file = fs.createReadStream(__dirname + '/gsoc.sql')
         schema = config.database
         Object.freeze(schema)
-        connetion = exports.con = db.createConnection(config)
+        connetion = exports.con = new Pool(config)
         connetion.connect(function (err) {
             if (err) {
                 console.error('error connecting: ' + err.stack);
                 reject(err)
                 return
             }
-            connetion.query('Select 1 from tbSensors', (err) => {
+            connetion.query('Select 1 from gsoc.tbSensors', (err) => {
                 if (err) {
 
                     file = file.read().toString()
@@ -51,8 +51,10 @@ exports.createConnection = async (config = template) => {
                         resolve()
                     }, 3000)
                 } else {
-
-                    resolve()
+                    connetion.query('SET search_path TO gsoc').then(re=>{
+                        
+                    })
+                    resolve('ok')
                 }
             })
         })
@@ -65,11 +67,18 @@ exports.getInfo = (name) => {
             reject("Not connected to a database")
             return
         }
+        console.log(name);
+        
         getSensorID(name).then(id => {
-            connetion.query('select sensorID from tbSensors')
-            connetion.query('Select * from ?? where `sensorID` = ?', ['tbSensors', id], function (error, results, fields) {
-                if (error) reject(error);
-                resolve(results)
+            //connetion.query('select sensorID from gsoc.tbSensors')
+            console.log(id);
+            
+            connetion.query('Select * from gsoc.tbSensors where sensorID = $1', [id], function (error, results, fields) {
+                if (error) 
+                    return reject(error);
+                console.log(results.rows[0]);
+                    
+                resolve(results.rows[0])
             });
         })
     })
@@ -78,9 +87,9 @@ exports.getInfo = (name) => {
 exports.readUserSensors = (name)=>{
     return new Promise ((resolve,reject)=>{
         getUserId(name).then(id=>{
-            connetion.query('select * from tbSensors where userID = ?',[id],function (error, results, fields) {
+            connetion.query('select * from gsoc.tbSensors where userID = $1',[id],function (error, results, fields) {
                 if (error) reject(error);
-                resolve(results)
+                resolve(results.rows)
             })
         })
     })
@@ -109,13 +118,13 @@ exports.registerSensor = (username, {
         
         
         getUserId(username).then(userId => {
-            connetion.query("insert into tbSensors (name,description,register,lastUpdate,unit,location,imgId,userId) values(?,?,now(),now(),?,ST_GeomFromText('POINT(? ?)', 4326),?,?)", [name, description, unit, lon, lat, imgId, userId], function (error, results, fields) {
+            connetion.query("insert into gsoc.tbSensors (name,description,register,lastUpdate,unit,X,Y,imgId,userId) values($1,$2,now(),now(),$3,$4, $5,$6,$7)", [name, description, unit, lon, lat, imgId, userId], function (error, results, fields) {
                 if (error) {
                     reject(error);
                     return
                 }
 
-                resolve(results)
+                resolve(results.rows)
             });
         })
     })
@@ -135,13 +144,13 @@ exports.registerUser = ({
             hash=crypto.createHash('sha512').update(hash).digest('hex')
         }
         vars.push(hash)
-        connetion.query("insert into users (userName,userMail,userPass) values(?,?,?)", vars, function (error, results, fields) {
+        connetion.query("insert into gsoc.tbusers (userName,userMail,userPass) values($1,$2,$3)", vars, function (error, results, fields) {
             if (error) {
                 reject(error);
                 return
             }
 
-            resolve(results)
+            resolve(results.rows)
         })
     })
 }
@@ -159,17 +168,17 @@ exports.registerRead = (name, value, decimal, hex = false) => {
 
         }
         getSensorID(name).then(id => {
-                connetion.query('insert into tbValues (sensorID,value,date) values (?,?,now())', [id, value], function (error, results, fields) {
+                connetion.query('insert into gsoc.tbValues (sensorID,value,date) values ($1,$2,now())', [id, value], function (error, results, fields) {
                     if (error) {
                         reject(error)
                         return
                     }
-                    connetion.query('update tbSensors set lastUpdate = now() where sensorID = ?', [id], function (error, results, fields) {
+                    connetion.query('update gsoc.tbSensors set lastUpdate = now() where sensorID = $1', [id], function (error, results, fields) {
                         if (error) {
                             reject(connetion.rollback())
                             return
                         }
-                        resolve(results)
+                        resolve(results.rows)
                         return
                     })
                 });
@@ -195,10 +204,10 @@ exports.registerRead = (name, value, decimal, hex = false) => {
 exports.editSensor = (name, info = {
     name: "",
     description: "",
-    ip: "",
     unit: "",
     lon: "",
-    lat: ""
+    lat: "",
+    img:""
 }) => {
     return new Promise((resolve, reject) => {
         getSensorID(name).then(id => {
@@ -206,38 +215,49 @@ exports.editSensor = (name, info = {
                 reject("id not found")
                 return
             }
-            var updateQuery = "update tbSensors set"
+            var i =1;
+            var updateQuery = "update gsoc.tbSensors set"
             var values = []
             if (info.name != undefined) {
-                updateQuery += ' name = ? ,'
+                updateQuery += ' name = $'+i+','
                 values.push(info.name)
+                i++
             }
             if (info.description != undefined) {
-                updateQuery += ' description = ? ,'
+                updateQuery += ' description = $'+i+' ,'
                 values.push(info.description)
+                i++
             }
             if (info.ip != undefined) {
-                updateQuery += ' ip = ? ,'
+                updateQuery += ' ip = $'+i+' ,'
                 values.push(info.ip)
+                i++
             }
             if (info.unit != undefined) {
-                updateQuery += ' unit = ? ,'
+                updateQuery += ' unit = $'+i+' ,'
                 values.push(info.unit)
+                i++
             }
             if (info.lon != undefined && info.lat) {
-                updateQuery += "location=ST_GeomFromText('POINT(? ?)', 4326) ,"
+                updateQuery += " X=$"+i+"y=$"(i+1)+" ,"
                 values.push(info.lon)
                 values.push(info.lat)
+                i+=2
+            }
+            if (info.img!=undefined) {
+                updateQuery += " imgId = $"+i+" ,"
+                values.push(info.img)
+                i++
             }
             console.log(name);
             
             updateQuery = updateQuery.substring(0, updateQuery.length - 1);
 
-            updateQuery += " where sensorID = ?"
+            updateQuery += " where sensorID = $"+i
             values.push(id)
             connetion.query(updateQuery, values, (error, results, fields) => {
                 if (error) reject(error)
-                resolve(results)
+                resolve(results.rows)
             })
         })
     })
@@ -248,12 +268,15 @@ exports.readSensor = (name, datespan = null) => {
         
         getSensorID(name).then(id => {
             let date = getDate()
-            console.log(date);
+            console.log("Name in read:"+name);
             
-            let query = "select T1.sensorID, T1.unit, T2.value, T2.date  from tbValues T2 inner join tbSensors as T1 on T2.sensorID = T1.sensorID where T1.sensorID = ?"
+            
+            let query = "select T1.sensorID, T1.unit, T2.value, T2.date  from gsoc.tbValues T2 inner join gsoc.tbSensors as T1 on T2.sensorID = T1.sensorID where T1.sensorID = $1"
             switch (datespan) {
                 case '1y':
                     query += " and year(T2.date) between " + (date[2] - 1) + " and " + date[2]
+                    console.log(query);
+                    
                     break;
                 case '6m':
                     var last = new Date()
@@ -279,24 +302,23 @@ exports.readSensor = (name, datespan = null) => {
                 default:
                     break;
             }
-            console.log(query);
             query += ' order by T2.date'
+            console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"+query);
+            
             connetion.query(query, [id], (error, results, fields) => {
                 if (error) {
-
-
-                    reject(error)
-                    return
+                    console.log("pq deus");
+                    return reject(error)
                 }
                 if (results.length == 0) {
-
-
-                    reject('No readings were found for the sensor: ' + name)
-                    return
+                    console.log('ue');
+                    return reject({code:0,message:"No values found for sensor:" + name})
                 }
-                console.log(results);
+                console.log('adada');
                 
-                resolve(results)
+                console.log(results.rows);
+                
+                resolve(results.rows)
             })
         })
     })
@@ -344,7 +366,7 @@ exports.stopDemo = () => {
         clearInterval(demoInterval)
         demoInterval = null
         mockSensorsId.forEach(id => {
-            connetion.query('Delete from tbSensors where sensorID = ?', [id])
+            connetion.query('Delete from gsoc.tbSensors where sensorID = $1', [id])
         });
         mockSensorsId = []
     })
@@ -353,12 +375,12 @@ exports.stopDemo = () => {
 
 exports.getAllSensors = () => {
     return new Promise((resolve, reject) => {
-        connetion.query('select * from gsoc.tbSensors', (error, results, fields) => {
+        connetion.query('select * from gsoc.gsoc.tbSensors', (error, results, fields) => {
             if (error) {
                 reject(error)
                 return
             }
-            resolve(results)
+            resolve(results.rows)
             return
         })
 
@@ -374,13 +396,13 @@ exports.getSensorPosition = (name) => {
     return new Promise((resolve, reject) => {
         getSensorID(name)
             .then(id => {
-                connetion.query('SELECT ST_Latitude(location) as lat,ST_Longitude(location) as lon FROM gsoc.tbsensors where sensorID = ?', [id], (error, results, fields) => {
+                connetion.query('SELECT X as lat, Y as lon FROM gsoc.gsoc.tbsensors where sensorID = $1', [id], (error, results, fields) => {
                     if (error) {
                         reject(error)
                         return
                     }
 
-                    resolve([results[0].lat, results[0].lon])
+                    resolve([results.rows[0].lat, results.rows[0].lon])
                 })
             })
     })
@@ -388,18 +410,47 @@ exports.getSensorPosition = (name) => {
 
 exports.getUser = (param) => {
     return new Promise((resolve, reject) => {
-        connetion.query('Select * from users where userName = ? or userMail = ? or idUsers = ?', [param, param, param], function (error, results, fields) {
+        var query='Select * from gsoc.tbusers where'
+        if(typeof param == 'number'){
+            query+=" userID = $1"
+        }   
+        else{
+            query=query+" userName = $1 or userMail = $1"
+        }
+        
+        connetion.query(query, [param], function (error, results, fields) {
             if (error) {
                 reject(error)
                 return
             }
-            if (typeof results[0] == 'undefined') {
+            
+            if (typeof results.rows[0] == 'undefined') {
                 reject("User Not found")
                 return
             }
-            resolve(results[0])
+            resolve(results.rows[0])
             return
 
+        })
+    })
+}
+
+exports.deleteSensor = (name)=>{
+    return new Promise ((resolve,reject)=>{
+        getSensorID(name).then(id=>{
+            connetion.query('delete from gsoc.tbsensors where sensorID = $1',[id],function (error, results, fields) {
+                if (error) {
+                    reject(error)
+                    return
+                }
+                if (typeof results.rows[0] == 'undefined') {
+                    reject("sensor not found")
+                    return
+                }
+                resolve(results.rows[0])
+                return
+    
+            })
         })
     })
 }
@@ -407,16 +458,21 @@ exports.getUser = (param) => {
 
 const getSensorID = (name) => {
     return new Promise((resolve, reject) => {
-        connetion.query('Select sensorID from gsoc.tbSensors where name = ?', [name], function (error, results, fields) {
+        console.log(name);
+        
+        connetion.query('Select sensorID from gsoc.tbSensors where name = $1', [name], function (error, results, fields) {
             if (error) {
                 reject(error)
                 return
             }
-            if (typeof results[0] == 'undefined') {
+            console.log(results);
+            console.log("\n\n\n\n\n\n\n\n\n\n");
+            
+            if (typeof results.rows[0] == 'undefined') {
                 reject(" sensor Not found")
                 return
             }
-            resolve(results[0].sensorID)
+            resolve(results.rows[0].sensorid)
             return
         })
     })
@@ -424,16 +480,18 @@ const getSensorID = (name) => {
 
 const getUserId = (name) => {
     return new Promise((resolve, reject) => {
-        connetion.query('Select idUsers from users where userName = ?', [name], function (error, results, fields) {
+        connetion.query('Select userID from gsoc.tbusers where userName = $1', [name], function (error, results, fields) {
             if (error) {
                 reject(error)
                 return
             }
-            if (typeof results[0] == 'undefined') {
+            console.log(results.rows[0]);
+            
+            if (typeof results.rows[0] == 'undefined') {
                 reject("user Not found")
                 return
             }
-            resolve(results[0].idUsers)
+            resolve(results.rows[0].userid)
             return
         })
     })

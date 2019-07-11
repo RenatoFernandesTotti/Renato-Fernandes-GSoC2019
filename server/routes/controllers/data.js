@@ -37,10 +37,12 @@ router.get('/getAllSensors', (req, res) => {
     })
 })
 router.get('/getSensorInfo', (req, res) => {
+    console.log('Server'+req.query.name);
+    
     GSoC.getInfo(req.query.name).then(result => {
         response.send(res, {
             code: 200,
-            result: result[0]
+            result: result
         })
 
     })
@@ -55,8 +57,6 @@ router.get('/readSensor', (req, res) => {
                 result: result
             })
         }).catch(err => {
-            console.log(err);
-
             response.send(res, {
                 code: 500,
                 error: err
@@ -71,7 +71,14 @@ router.get('/readSensor', (req, res) => {
 
         }).catch(err => {
             console.log(err);
-
+            if(err.code==0){
+                response.send(res,{
+                    code:200,
+                    result:[]
+                })
+                return
+            }
+            console.log('pq nao?');
             response.send(res, {
                 code: 500,
                 error: err
