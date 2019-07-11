@@ -15,7 +15,7 @@ app.use(require('./routes/router'))
 
 var server = http.createServer(app);
 
-server.listen(8888, () => {
+server.listen(process.env.PORT , () => {
     console.log("mas rapaz");
     
 })
