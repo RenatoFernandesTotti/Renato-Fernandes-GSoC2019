@@ -1,6 +1,6 @@
 {
   "name": "liquidsensors",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Npm package to control,save,retrieve and display data from sensors integrating the liquid galaxy pataform",
   "main": "data.js",
   "scripts": {

@@ -27,12 +27,12 @@ var connetion
 var exports = module.exports = {}
 
 
-exports.createConnection = async (config=undefined) => {
+exports.createConnection = async (config,op=true) => {
     return new Promise((resolve, reject) => {
         var file = fs.createReadStream(__dirname + '/gsoc.sql')
         schema = config.database
         Object.freeze(schema)
-        if(typeof config !== "undefined")
+        if(op)
             connetion = exports.con = new Pool(config)
         else
             connetion = exports.con = new Pool()
