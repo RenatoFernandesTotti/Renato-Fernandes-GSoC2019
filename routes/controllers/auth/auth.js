@@ -1,7 +1,6 @@
 const router = require('express').Router()
 var util = require('util');
 const GSoC = require('liquidsensors')
-var keys = require('../../../keys.min')
 const bodyParser = require('body-parser')
 const axios = require('axios')
 const uuid = require('uuid/v4')
@@ -54,7 +53,7 @@ const user = (name) => {
 }
 
 
-GSoC.createConnection(keys)
+GSoC.createConnection()
 
 
 

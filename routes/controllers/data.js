@@ -1,6 +1,5 @@
 const router = require('express').Router()
 const GSoC = require('liquidsensors')
-var keys = require('../../keys.min')
 const bodyParser = require('body-parser')
 const response = require('../../lib/response')
 
@@ -10,7 +9,7 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
     extended: false
 }));
-GSoC.createConnection(keys)
+GSoC.createConnection()
 
 
 
