@@ -9,7 +9,9 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
     extended: false
 }));
-GSoC.createConnection(null,false)
+GSoC.createConnection({
+    connectionString: process.env.DATABASE_URL,
+})
 
 
 
