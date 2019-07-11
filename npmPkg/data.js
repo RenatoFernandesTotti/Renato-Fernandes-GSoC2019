@@ -32,7 +32,10 @@ exports.createConnection = async (config = template) => {
         var file = fs.createReadStream(__dirname + '/gsoc.sql')
         schema = config.database
         Object.freeze(schema)
-        connetion = exports.con = new Pool(config)
+        if(typeof config !== "undefined")
+            connetion = exports.con = new Pool(config)
+        else
+            connetion = exports.con = new Pool()
         connetion.connect(function (err) {
             if (err) {
                 console.error('error connecting: ' + err.stack);
