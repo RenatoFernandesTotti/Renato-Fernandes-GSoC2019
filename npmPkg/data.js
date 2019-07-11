@@ -29,9 +29,7 @@ var exports = module.exports = {}
 
 exports.createConnection = async (config,op=true) => {
     return new Promise((resolve, reject) => {
-        var file = fs.createReadStream(__dirname + '/gsoc.sql')
-        schema = config.database
-        Object.freeze(schema)
+        var file = fs.createReadStream(__dirname + '/data.sql')
         if(op)
             connetion = exports.con = new Pool(config)
         else
