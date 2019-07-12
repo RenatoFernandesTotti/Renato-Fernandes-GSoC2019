@@ -376,7 +376,7 @@ exports.stopDemo = () => {
 
 exports.getAllSensors = () => {
     return new Promise((resolve, reject) => {
-        connetion.query('select * from gsoc.gsoc.tbSensors', (error, results, fields) => {
+        connetion.query('select * from gsoc.tbSensors', (error, results, fields) => {
             if (error) {
                 reject(error)
                 return
