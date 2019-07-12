@@ -2,7 +2,7 @@ const router = require('express').Router()
 const GSoC = require('liquidsensors')
 const bodyParser = require('body-parser')
 const response = require('../../lib/response')
-
+var cors = require('cors');
 
 
 router.use(bodyParser.json());
