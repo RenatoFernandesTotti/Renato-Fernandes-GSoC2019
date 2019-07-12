@@ -265,20 +265,20 @@ exports.readSensor = (name, datespan = null) => {
             let query = "select T1.sensorID, T1.unit, T2.value, T2.date  from gsoc.tbValues T2 inner join gsoc.tbSensors as T1 on T2.sensorID = T1.sensorID where T1.sensorID = $1"
             switch (datespan) {
                 case '1y':
-                    query += " and year(T2.date) between " + (date[2] - 1) + " and " + date[2]
+                    query += " and date_part('year', T2.date) between " + (date[2] - 1) + " and " + date[2]
                     console.log(query);
                     
                     break;
                 case '6m':
                     var last = new Date()
                     last.setMonth(date[1] - 6)
-                    query += " and month(T2.date) between " + (last.getMonth() + 1) + " and " + date[1]
+                    query += " and date_part('month', T2.date) between " + (last.getMonth() + 1) + " and " + date[1]
                     break;
                 case '1m':
                     var last = new Date()
                     last.setMonth(date[1] - 2)
                     console.log(last.getMonth());
-                    query += " and month(T2.date) between " + (last.getMonth() + 1) + " and " + date[1]
+                    query += " and date_part('month', T2.date) between " + (last.getMonth() + 1) + " and " + date[1]
                     break;
                 case '1w':
                     var last = new Date()
