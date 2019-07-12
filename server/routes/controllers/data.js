@@ -1,6 +1,5 @@
 const router = require('express').Router()
 const GSoC = require('liquidsensors')
-var keys = require('../../keys.min')
 const bodyParser = require('body-parser')
 const response = require('../../lib/response')
 var cors = require('cors');
@@ -10,10 +9,9 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
     extended: false
 }));
-router.use(cors({credentials: true, origin: '*'}))
-GSoC.createConnection(keys)
-
-
+GSoC.createConnection({
+    connectionString: process.env.DATABASE_URL,
+})
 
 router.post('/registerRead', (req, res) => {
     GSoC.registerRead(req.body.name, req.body.val, req.body.decimal, req.body.hex).then(result => {
