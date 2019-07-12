@@ -185,17 +185,7 @@ exports.registerRead = (name, value, decimal, hex = false) => {
                 });
             })
             .catch(() => {
-
-                exports.registerSensor({
-                    name: name,
-                    lat: 0,
-                    lon: 0,
-                    unit: null
-                }).then(() => {
-                    exports.registerRead(name, value)
-                })
-
-
+                return reject()
             })
     })
 

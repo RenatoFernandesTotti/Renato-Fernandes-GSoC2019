@@ -3,13 +3,14 @@ const GSoC = require('liquidsensors')
 var keys = require('../../keys.min')
 const bodyParser = require('body-parser')
 const response = require('../../lib/response')
-
+var cors = require('cors');
 
 
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
     extended: false
 }));
+router.use(cors({credentials: true, origin: '*'}))
 GSoC.createConnection(keys)
 
 

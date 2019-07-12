@@ -1,7 +1,6 @@
 const express = require('express')
 //const sql = require('mssql');
 const app = express()
-const facensKeys = require('./facensKey.min')
 const http = require('http');
 var cors = require('cors');
 // const pool = new sql.ConnectionPool(facensKeys)
@@ -13,7 +12,7 @@ app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+    //res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
     //res.setHeader('Access-Control-Allow-Origin', 'https://gsoc-renatofernandes-2019.herokuapp.com');
     next();
 });
