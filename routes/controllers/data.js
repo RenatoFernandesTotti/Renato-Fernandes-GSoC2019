@@ -13,8 +13,6 @@ GSoC.createConnection({
     connectionString: process.env.DATABASE_URL,
 })
 
-router.use(cors({credentials: true, origin: '*'}))
-
 router.post('/registerRead', (req, res) => {
     GSoC.registerRead(req.body.name, req.body.val, req.body.decimal, req.body.hex).then(result => {
         response.send(res, {

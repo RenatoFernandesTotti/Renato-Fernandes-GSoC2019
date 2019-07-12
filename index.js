@@ -3,7 +3,18 @@ const app = express()
 const http = require('http');
 var cors = require('cors');
 
-app.use(cors({credentials: true, origin: 'https://gsoc-renatofernandes-2019.herokuapp.com'}))
+const unless = function(path, middleware) {
+    return function(req, res, next) {
+        if (path === req.path) {
+            return next();
+        } else {
+            return middleware(req, res, next);
+        }
+    };
+};
+
+
+app.use(unless('/registerRead',cors({credentials: true, origin: 'https://gsoc-renatofernandes-2019.herokuapp.com'})))
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
