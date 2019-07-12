@@ -1,7 +1,5 @@
 const router = require('express').Router()
-var util = require('util');
 const GSoC = require('liquidsensors')
-var keys = require('../../../keys.min')
 const bodyParser = require('body-parser')
 const axios = require('axios')
 const uuid = require('uuid/v4')
@@ -23,7 +21,6 @@ router.use(cookieParser())
 
 //"Private" methods
 const authMiddleware = (req, res, next) => {
-    console.log(req.isAuthenticated());
 
     if (!req.isAuthenticated()) {
         res.status(401).send('You are not authenticated')
@@ -38,7 +35,6 @@ const setCookies = (res, exp) => {
             maxAge: exp,
             httpOnly: false
         })
-        console.log(res);
 
         resolve(res)
     })
@@ -134,7 +130,6 @@ router.post('/auth/login', (req, res, next) => {
 
 
         if (info) {
-            console.log(info.message);
             
             return res.status(418).send(info.message)
         }
@@ -143,17 +138,14 @@ router.post('/auth/login', (req, res, next) => {
             return res.status(500).send(err)
         }
         if (!user) {
-            console.log("pqdeus");
             
             return res.status(401).send("User not found");
         }
         req.login(user, (err) => {
             if (err) {
-                console.log(err);
                 
                 return res.status(401).send(err);
             }
-            console.log("asdas");
             
             setCookies(res, maxAge - 4).then(res => {
                 res.status(200).send("ok");
@@ -178,7 +170,6 @@ router.post('/auth/register', (req, res) => {
 })
 
 router.get('/auth/check', (req, res) => {
-    console.log('Log check:' + req.isAuthenticated());
 
     if (!req.isAuthenticated()) {
         res.clearCookie("valid");
@@ -191,7 +182,6 @@ router.get('/auth/check', (req, res) => {
 
 router.post('/data/registersensor', authMiddleware, (req, res) => {
     var bd = req.body
-    console.log(req.user.username);
     
     GSoC.registerSensor(req.user.username, {
             name: bd.name,
@@ -206,7 +196,6 @@ router.post('/data/registersensor', authMiddleware, (req, res) => {
                 code: 200
             })
         }).catch(err => {
-            console.log(err);
             
             response.send(res, {
                 code: 500,
@@ -216,7 +205,6 @@ router.post('/data/registersensor', authMiddleware, (req, res) => {
 })
 router.get('/getusersensors', authMiddleware, (req, res) => {
     GSoC.readUserSensors(req.user.username).then(result => {
-        console.log(result);
 
         response.send(res, {
             result: result,
@@ -226,8 +214,6 @@ router.get('/getusersensors', authMiddleware, (req, res) => {
 })
 
 router.delete('/data/deletesensor', authMiddleware, (req, res) => {
-    console.log(req.body);
-    console.log(req.isAuthenticated());
 
     GSoC.deleteSensor(req.body.name).then(result => {
         response.send(res, {
@@ -246,7 +232,6 @@ router.delete('/data/deletesensor', authMiddleware, (req, res) => {
 
 router.post('/data/editsensor', authMiddleware, (req, res) => {
     var bd = req.body
-    console.log(bd);
 
     GSoC.editSensor(bd.oldname, {
             name: bd.name,
@@ -261,7 +246,6 @@ router.post('/data/editsensor', authMiddleware, (req, res) => {
                 code: 200
             })
         }).catch(err => {
-            console.log(err);
 
             response.send(res, {
                 code: 500,

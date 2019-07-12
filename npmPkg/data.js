@@ -68,16 +68,13 @@ exports.getInfo = (name) => {
             reject("Not connected to a database")
             return
         }
-        console.log(name);
         
         getSensorID(name).then(id => {
             //connetion.query('select sensorID from gsoc.tbSensors')
-            console.log(id);
             
             connetion.query('Select * from gsoc.tbSensors where sensorID = $1', [id], function (error, results, fields) {
                 if (error) 
                     return reject(error);
-                console.log(results.rows[0]);
                     
                 resolve(results.rows[0])
             });
@@ -114,8 +111,6 @@ exports.registerSensor = (username, {
             reject('No username set')
             return
         }
-        console.log(lat);
-        console.log(lon);
         
         
         getUserId(username).then(userId => {
@@ -240,7 +235,6 @@ exports.editSensor = (name, info = {
                 values.push(info.img)
                 i++
             }
-            console.log(name);
             
             updateQuery = updateQuery.substring(0, updateQuery.length - 1);
 
@@ -259,14 +253,12 @@ exports.readSensor = (name, datespan = null) => {
         
         getSensorID(name).then(id => {
             let date = getDate()
-            console.log("Name in read:"+name);
             
             
             let query = "select T1.sensorID, T1.unit, T2.value, T2.date  from gsoc.tbValues T2 inner join gsoc.tbSensors as T1 on T2.sensorID = T1.sensorID where T1.sensorID = $1"
             switch (datespan) {
                 case '1y':
                     query += " and date_part('year', T2.date) between " + (date[2] - 1) + " and " + date[2]
-                    console.log(query);
                     
                     break;
                 case '6m':
@@ -277,7 +269,6 @@ exports.readSensor = (name, datespan = null) => {
                 case '1m':
                     var last = new Date()
                     last.setMonth(date[1] - 2)
-                    console.log(last.getMonth());
                     query += " and date_part('month', T2.date) between " + (last.getMonth() + 1) + " and " + date[1]
                     break;
                 case '1w':
@@ -294,20 +285,15 @@ exports.readSensor = (name, datespan = null) => {
                     break;
             }
             query += ' order by T2.date'
-            console.log("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"+query);
             
             connetion.query(query, [id], (error, results, fields) => {
                 if (error) {
-                    console.log("pq deus");
                     return reject(error)
                 }
                 if (results.length == 0) {
-                    console.log('ue');
                     return reject({code:0,message:"No values found for sensor:" + name})
                 }
-                console.log('adada');
                 
-                console.log(results.rows);
                 
                 resolve(results.rows)
             })
@@ -449,15 +435,12 @@ exports.deleteSensor = (name)=>{
 
 const getSensorID = (name) => {
     return new Promise((resolve, reject) => {
-        console.log(name);
         
         connetion.query('Select sensorID from gsoc.tbSensors where name = $1', [name], function (error, results, fields) {
             if (error) {
                 reject(error)
                 return
             }
-            console.log(results);
-            console.log("\n\n\n\n\n\n\n\n\n\n");
             
             if (typeof results.rows[0] == 'undefined') {
                 reject(" sensor Not found")
@@ -476,7 +459,6 @@ const getUserId = (name) => {
                 reject(error)
                 return
             }
-            console.log(results.rows[0]);
             
             if (typeof results.rows[0] == 'undefined') {
                 reject("user Not found")
