@@ -54,7 +54,11 @@ const user = (name) => {
 
 
 GSoC.createConnection({
-    connectionString: process.env.DATABASE_URL,
+    user: 'postgres',
+    host: 'localhost',
+    database: 'gsoc',
+    password: 'renato',
+    port: 5432
 })
 
 
@@ -136,7 +140,7 @@ router.post('/auth/login', (req, res, next) => {
 
         if (info) {
             console.log(info.message);
-            
+
             return res.status(418).send(info.message)
         }
         if (err) {
@@ -145,17 +149,17 @@ router.post('/auth/login', (req, res, next) => {
         }
         if (!user) {
             console.log("pqdeus");
-            
+
             return res.status(401).send("User not found");
         }
         req.login(user, (err) => {
             if (err) {
                 console.log(err);
-                
+
                 return res.status(401).send(err);
             }
             console.log("asdas");
-            
+
             setCookies(res, maxAge - 4).then(res => {
                 res.status(200).send("ok");
             })
@@ -170,11 +174,11 @@ router.post('/auth/register', (req, res) => {
         userMail: req.body.email,
         userPass: req.body.password
     }).then(result => {
-        response.send(res,{
-            code:200,
-            result:result
-        })    
-    
+        response.send(res, {
+            code: 200,
+            result: result
+        })
+
     })
 })
 
@@ -193,7 +197,7 @@ router.get('/auth/check', (req, res) => {
 router.post('/data/registersensor', authMiddleware, (req, res) => {
     var bd = req.body
     console.log(req.user.username);
-    
+
     GSoC.registerSensor(req.user.username, {
             name: bd.name,
             description: bd.desc,
@@ -208,7 +212,7 @@ router.post('/data/registersensor', authMiddleware, (req, res) => {
             })
         }).catch(err => {
             console.log(err);
-            
+
             response.send(res, {
                 code: 500,
                 error: err
