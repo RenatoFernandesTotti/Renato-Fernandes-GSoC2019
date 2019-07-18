@@ -53,7 +53,9 @@ const user = (name) => {
 }
 
 
-GSoC.createConnection(process.env.DATABASE_URL)
+GSoC.createConnection({
+    connectionString: process.env.DATABASE_URL,
+})
 
 
 

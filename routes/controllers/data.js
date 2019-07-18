@@ -9,7 +9,9 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
     extended: false
 }));
-GSoC.createConnection(process.env.DATABASE_URL)
+GSoC.createConnection({
+    connectionString: process.env.DATABASE_URL,
+})
 
 router.post('/registerRead', (req, res) => {
     GSoC.registerRead(req.body.name, req.body.val, req.body.decimal, req.body.hex).then(result => {
