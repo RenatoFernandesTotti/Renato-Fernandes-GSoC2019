@@ -53,13 +53,7 @@ const user = (name) => {
 }
 
 
-GSoC.createConnection({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'gsoc',
-    password: 'renato',
-    port: 5432
-})
+GSoC.createConnection(process.env.DATABASE_URL)
 
 
 

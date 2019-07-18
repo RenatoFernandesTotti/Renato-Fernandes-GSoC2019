@@ -9,13 +9,7 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
     extended: false
 }));
-GSoC.createConnection({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'gsoc',
-    password: 'renato',
-    port: 5432}
-  )
+GSoC.createConnection(process.env.DATABASE_URL)
 
 router.post('/registerRead', (req, res) => {
     GSoC.registerRead(req.body.name, req.body.val, req.body.decimal, req.body.hex).then(result => {
@@ -40,8 +34,8 @@ router.get('/getAllSensors', (req, res) => {
     })
 })
 router.get('/getSensorInfo', (req, res) => {
-    console.log('Server'+req.query.name);
-    
+    console.log('Server' + req.query.name);
+
     GSoC.getInfo(req.query.name).then(result => {
         response.send(res, {
             code: 200,
@@ -74,10 +68,10 @@ router.get('/readSensor', (req, res) => {
 
         }).catch(err => {
             console.log(err);
-            if(err.code==0){
-                response.send(res,{
-                    code:200,
-                    result:[]
+            if (err.code == 0) {
+                response.send(res, {
+                    code: 200,
+                    result: []
                 })
                 return
             }
