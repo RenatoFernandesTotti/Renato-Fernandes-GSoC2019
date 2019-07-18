@@ -64,36 +64,9 @@ app.use(require('./routes/router'))
 
 var server = http.createServer(app);
 
-server.listen(8888, () => {
-    console.log("listening on:8888");
+server.listen(process.env.PORT, () => {
+    console.log("listening on:",process.env.PORT);
 
 })
 
 
-var tunnel = localtunnel(8888, {
-    subdomain: "renatogsoc"
-}, function (err, tunnel) {
-    if (err) {
-        console.log(err);
-
-    }
-
-    console.log("Public url: \n" + tunnel.url);
-
-});
-
-tunnel.on('close', function () {
-    tunnel = localtunnel(8888, {
-        subdomain: "renatogsoc"
-    })
-})
-tunnel.on('error', function (err) {
-    console.log(err);
-    console.log(tunnel);
-
-})
-tunnel.on('request', function (info) {
-    // console.log(info);
-    // console.log(tunnel);
-
-})
