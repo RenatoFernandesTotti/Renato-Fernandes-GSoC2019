@@ -10,8 +10,12 @@ router.use(bodyParser.urlencoded({
     extended: false
 }));
 GSoC.createConnection({
-    connectionString: process.env.DATABASE_URL,
-})
+    user: 'postgres',
+    host: 'localhost',
+    database: 'gsoc',
+    password: 'renato',
+    port: 5432}
+  )
 
 router.post('/registerRead', (req, res) => {
     GSoC.registerRead(req.body.name, req.body.val, req.body.decimal, req.body.hex).then(result => {
