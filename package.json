@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --ignore sessions/ index.js",
-    "dev-on": "concurrently  \"nodemon --ignore sessions/ /mnt/d/Codes/Repositories/Renato-Fernandes-GSoC2019/server/index.js\" \"autossh -R s2os10fhgh:80:localhost:8888 serveo.net \""
+    "dev-on": "concurrently  \"nodemon --ignore sessions/ /mnt/d/Codes/Repositories/Renato-Fernandes-GSoC2019/server/index.js\" \"autossh -R s2os10fhgh:80:localhost:8888 serveo.net \"",
+    "start": "node index.js"
   },
   "author": "Renato Fernandes",
   "license": "ISC",
