@@ -3,6 +3,7 @@ const GSoC = require('liquidsensors')
 const bodyParser = require('body-parser')
 const response = require('../../lib/response')
 var cors = require('cors');
+const fs = require('fs')
 
 
 router.use(bodyParser.json());
@@ -109,8 +110,23 @@ router.get('/checkUser', (req, res) => {
         })
 })
 
+router.get('/beurl',(req,res)=>{
+    response.send(res,{
+        code:200,
+        result:process.env.URL
+    })
+})
 
-
-
+router.post('/movelg',(req,res)=>{
+    let lat = req.body.lat
+    let lng = req.body.lng
+    let string='flytoview=<LookAt><longitude>'+lng+'</longitude><latitude>'+lat+
+    '</latitude><altitude>0</altitude><heading>167.0211046386626</heading><tilt>68.68179673613697</tilt><range>774.4323347622752</range><altitudeMode>relativeToGround</altitudeMode><gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode></LookAt>'
+    fs.writeFile('/tmp/query.txt',string,()=>{
+        console.log("ok");
+        res.send('ok')
+        
+    })
+})
 
 module.exports = router

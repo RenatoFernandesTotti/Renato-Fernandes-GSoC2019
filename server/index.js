@@ -77,7 +77,7 @@ var tunnel = localtunnel(8888, {
         console.log(err);
 
     }
-
+    process.env.URL= tunnel.url
     console.log("Public url: \n" + tunnel.url);
 
 });

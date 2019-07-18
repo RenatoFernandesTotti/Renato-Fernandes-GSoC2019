@@ -225,7 +225,8 @@ exports.editSensor = (name, info = {
                 i++
             }
             if (info.lon != undefined && info.lat) {
-                updateQuery += " X=$"+i+"y=$"(i+1)+" ,"
+                console.log(updateQuery);
+                updateQuery += " X=$"+i+", y=$"+(i+1)+" ,"
                 values.push(info.lon)
                 values.push(info.lat)
                 i+=2
@@ -242,7 +243,7 @@ exports.editSensor = (name, info = {
             values.push(id)
             connetion.query(updateQuery, values, (error, results, fields) => {
                 if (error) reject(error)
-                resolve(results.rows)
+                resolve()
             })
         })
     })
