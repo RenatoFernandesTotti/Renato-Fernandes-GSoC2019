@@ -10,7 +10,7 @@
     "start": "node index.js"
   },
   "engines": {
-    "node": ">=12.6"
+    "node": "12.6"
   },
   "author": "Renato Fernandes",
   "license": "ISC",
