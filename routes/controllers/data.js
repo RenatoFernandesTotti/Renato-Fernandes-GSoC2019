@@ -106,6 +106,12 @@ router.get('/checkUser', (req, res) => {
 })
 
 
+router.get('/beurl',(req,res)=>{
+    response.send(res,{
+        code:200,
+        result:process.env.URL
+    })
+})
 
 
 
