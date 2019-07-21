@@ -129,4 +129,8 @@ router.post('/movelg',(req,res)=>{
     })
 })
 
+router.post('/opensite',(req,res)=>{
+    
+})
+
 module.exports = router
