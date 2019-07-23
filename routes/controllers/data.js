@@ -3,7 +3,9 @@ const GSoC = require('liquidsensors')
 const bodyParser = require('body-parser')
 const response = require('../../lib/response')
 var cors = require('cors');
-
+const fs = require('fs')
+var Client = require('ssh2').Client
+var copy = require('scp2')
 
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
@@ -24,11 +26,30 @@ router.post('/registerRead', (req, res) => {
 
 router.get('/getAllSensors', (req, res) => {
     GSoC.getAllSensors().then(data => {
+        var uniqueNames = [...new Set(data.map(data => data.username))]
+        var formatList = []
+        uniqueNames.forEach(element => {
+            formatList.push({
+                name: element,
+                sensors: []
+            })
+        });
+        formatList.forEach(owner => {
+            data.forEach(element => {
+                if (owner.name == element.username) {
+                    owner.sensors.push(element.name)
+                }
+            });
+        });
+        console.log(formatList);
+
         response.send(res, {
             code: 200,
-            result: data
+            result: formatList
         })
     }).catch(error => {
+        console.log(error);
+
         response.send(res, {
             code: 503,
             error: error
@@ -105,14 +126,88 @@ router.get('/checkUser', (req, res) => {
         })
 })
 
-
-router.get('/beurl',(req,res)=>{
-    response.send(res,{
-        code:200,
-        result:process.env.URL
+router.get('/beurl', (req, res) => {
+    response.send(res, {
+        code: 200,
+        result: process.env.URL
     })
 })
 
 
+router.post('/movelg', (req, res) => {
+    let lat = req.body.lat
+    let lng = req.body.lng
+    let string = 'flytoview=<LookAt><longitude>' + lng + '</longitude><latitude>' + lat +
+        '</latitude><altitude>0</altitude><heading>167.0211046386626</heading><tilt>68.68179673613697</tilt><range>774.4323347622752</range><altitudeMode>relativeToGround</altitudeMode><gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode></LookAt>'
+    console.log(string);
+    console.log(req.body);
+    
+    fs.writeFile(__dirname + '/query.txt', string, () => {
+        console.log("ok");
+        copy.scp(__dirname + '/query.txt', {
+            host: req.body.host,
+            username: req.body.username,
+            password: req.body.password,
+            path: '/tmp/query.txt'
+        }, function (err) {
+            console.log(err);
+            res.send('ok')
+
+        })
+    })
+})
+
+router.post('/opensite', (req, res) => {
+
+    var conn = new Client();
+    conn.on('ready', function () {
+        console.log('Client :: ready');
+        conn.exec("export DISPLAY=:0 ; chromium-browser --kiosk " + req.body.serverurl + " </dev/null >/dev/null 2>&1 &", function (err, stream) {
+            if (err) throw err;
+            stream.on('close', function (code, signal) {
+                console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+                conn.end();
+                res.send('ok')
+                return
+            }).on('data', function (data) {
+                console.log('STDOUT: ' + data);
+            }).stderr.on('data', function (data) {
+                console.log('STDERR: ' + data);
+            });
+        });
+    }).connect({
+        host: req.body.lgurl,
+        port: 22,
+        username: req.body.lguser,
+        password: req.body.lgkey
+    });
+
+
+})
+
+router.post('/closesite', (req, res) => {
+    var conn = new Client();
+    conn.on('ready', function () {
+        console.log('Client :: ready close');
+        conn.exec("export DISPLAY=:0 ; pkill -f chromium-browser", function (err, stream) {
+            if (err) throw err;
+            stream.on('close', function (code, signal) {
+                console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+                conn.end();
+                res.send('ok')
+                return
+            }).on('data', function (data) {
+                console.log('STDOUT: ' + data);
+            }).stderr.on('data', function (data) {
+                console.log('STDERR: ' + data);
+            });
+        });
+    }).connect({
+        host: req.body.lgurl,
+        port: 22,
+        username: req.body.lguser,
+        password: req.body.lgkey
+    });
+})
 
 module.exports = router
