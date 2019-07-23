@@ -353,7 +353,7 @@ exports.stopDemo = () => {
 
 exports.getAllSensors = () => {
     return new Promise((resolve, reject) => {
-        connetion.query('select * from gsoc.tbSensors', (error, results, fields) => {
+        connetion.query('select gsoc.tbSensors.name , gsoc.tbusers.username  from gsoc.tbSensors inner join gsoc.tbusers on gsoc.tbSensors.userid = gsoc.tbusers.userid', (error, results, fields) => {
             if (error) {
                 reject(error)
                 return

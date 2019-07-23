@@ -267,6 +267,8 @@ router.post('/data/editsensor', authMiddleware, (req, res) => {
             })
         }).catch(err => {
             console.log(err);
+            console.log("Here");
+            
 
             response.send(res, {
                 code: 500,
