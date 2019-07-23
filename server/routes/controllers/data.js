@@ -155,7 +155,7 @@ router.post('/movelg', (req, res) => {
             path: '/tmp/query.txt'
         }, function (err) {
             console.log(err);
-            res.send('ok')
+
 
         })
     })
