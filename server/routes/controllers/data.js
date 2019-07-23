@@ -189,10 +189,10 @@ router.post('/opensite', (req, res) => {
 
 })
 
-router.get('/closesite', (req, res) => {
+router.post('/closesite', (req, res) => {
     var conn = new Client();
     conn.on('ready', function () {
-        console.log('Client :: ready');
+        console.log('Client :: ready close');
         conn.exec("export DISPLAY=:0 ; pkill -f chromium-browser", function (err, stream) {
             if (err) throw err;
             stream.on('close', function (code, signal) {
