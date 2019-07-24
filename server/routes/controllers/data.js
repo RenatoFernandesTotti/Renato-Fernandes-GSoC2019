@@ -60,6 +60,15 @@ router.get('/getAllSensors', (req, res) => {
         })
     })
 })
+
+router.get('/getfullsensors',(req,res)=>{
+    GSoC.getFullSensors().then(re=>{
+        response.send(res,{
+            code:200,
+            result:re
+        })
+    })
+})
 router.get('/getSensorInfo', (req, res) => {
     console.log('Server' + req.query.name);
 

@@ -365,6 +365,20 @@ exports.getAllSensors = () => {
     })
 }
 
+exports.getFullSensors = () => {
+    return new Promise((resolve, reject) => {
+        connetion.query('select *  from gsoc.tbSensors', (error, results, fields) => {
+            if (error) {
+                reject(error)
+                return
+            }
+            resolve(results.rows)
+            return
+        })
+
+    })
+}
+
 /**
  * Check database for the longitude e latitude
  * @param {String} name
