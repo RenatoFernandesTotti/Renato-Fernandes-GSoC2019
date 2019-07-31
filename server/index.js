@@ -89,7 +89,6 @@ tunnel.on('close', function () {
 })
 tunnel.on('error', function (err) {
     console.log(err);
-    console.log(tunnel);
 
 })
 tunnel.on('request', function (info) {

@@ -6,6 +6,7 @@ var cors = require('cors');
 const fs = require('fs')
 var Client = require('ssh2').Client
 var copy = require('scp2')
+var Clientscp = require('scp2').Client;
 
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
@@ -61,11 +62,11 @@ router.get('/getAllSensors', (req, res) => {
     })
 })
 
-router.get('/getfullsensors',(req,res)=>{
-    GSoC.getFullSensors().then(re=>{
-        response.send(res,{
-            code:200,
-            result:re
+router.get('/getfullsensors', (req, res) => {
+    GSoC.getFullSensors().then(re => {
+        response.send(res, {
+            code: 200,
+            result: re
         })
     })
 })
@@ -151,49 +152,78 @@ router.post('/movelg', (req, res) => {
     let lat = req.body.lat
     let lng = req.body.lng
     let string = 'flytoview=<LookAt><longitude>' + lng + '</longitude><latitude>' + lat +
-        '</latitude><altitude>0</altitude><heading>167.0211046386626</heading><tilt>68.68179673613697</tilt><range>774.4323347622752</range><altitudeMode>relativeToGround</altitudeMode><gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode></LookAt>'
+        '</latitude><altitude>0</altitude><heading>167.0211046386626</heading><tilt>68.68179673613697</tilt><range>100</range><altitudeMode>relativeToGround</altitudeMode><gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode></LookAt>'
     console.log(string);
     console.log(req.body);
+    console.log(Clientscp());
+    var teste = new Clientscp({
+        host: req.body.host,
+        username: req.body.username,
+        password: req.body.password,
+        path: '/tmp/query.txt'
+    })
+    console.log(teste);
     
     fs.writeFile(__dirname + '/query.txt', string, () => {
         console.log("ok");
-        copy.scp(__dirname + '/query.txt', {
-            host: req.body.host,
-            username: req.body.username,
-            password: req.body.password,
-            path: '/tmp/query.txt'
-        }, function (err) {
+        teste.upload(__dirname + '/query.txt','/tmp/query.txt',(err)=>{
             console.log(err);
-
-
+            
         })
+        teste.on('error',()=>{
+            console.log('jere');
+            res.send('fail')
+            
+        })
+        teste.on('end',()=>{
+            res.send('ok')
+        })
+        // teste.scp(__dirname + '/query.txt', {
+        //     host: req.body.host,
+        //     username: req.body.username,
+        //     password: req.body.password,
+        //     path: '/tmp/query.txt'
+        // }, function (err) {
+        //     if (!err) {
+        //         res.send('ok')
+        //     } else {
+        //         res.send('not ok')
+        //     }
+
+
+        // })
     })
+
 })
 
 router.post('/opensite', (req, res) => {
+    console.log(req.body);
 
     var conn = new Client();
-    conn.on('ready', function () {
-        console.log('Client :: ready');
-        conn.exec("export DISPLAY=:0 ; chromium-browser --kiosk " + req.body.serverurl + " </dev/null >/dev/null 2>&1 &", function (err, stream) {
-            if (err) throw err;
-            stream.on('close', function (code, signal) {
-                console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
-                conn.end();
-                res.send('ok')
-                return
-            }).on('data', function (data) {
-                console.log('STDOUT: ' + data);
-            }).stderr.on('data', function (data) {
-                console.log('STDERR: ' + data);
+    conn.on('error', (err) => {
+            res.send(err)
+        })
+        .on('ready', function () {
+            console.log('Client :: ready');
+            conn.exec("export DISPLAY=:0 ; chromium-browser --kiosk " + req.body.serverurl + " </dev/null >/dev/null 2>&1 &", function (err, stream) {
+                if (err) throw err;
+                stream.on('close', function (code, signal) {
+                    console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
+                    conn.end();
+                    res.send('ok')
+                    return
+                }).on('data', function (data) {
+                    console.log('STDOUT: ' + data);
+                }).stderr.on('data', function (data) {
+                    console.log('STDERR: ' + data);
+                });
             });
+        }).connect({
+            host: req.body.lgurl,
+            port: 22,
+            username: req.body.lguser,
+            password: req.body.lgkey
         });
-    }).connect({
-        host: req.body.lgurl,
-        port: 22,
-        username: req.body.lguser,
-        password: req.body.lgkey
-    });
 
 
 })

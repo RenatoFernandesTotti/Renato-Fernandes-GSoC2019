@@ -26,6 +26,7 @@ var connetion
 //Export module
 var exports = module.exports = {}
 
+exports.con=null 
 
 exports.createConnection = async (config,op=true) => {
     return new Promise((resolve, reject) => {
@@ -402,12 +403,14 @@ exports.getSensorPosition = (name) => {
 
 exports.getUser = (param) => {
     return new Promise((resolve, reject) => {
+        console.log(param);
+        
         var query='Select * from gsoc.tbusers where'
         if(typeof param == 'number'){
             query+=" userID = $1"
         }   
         else{
-            query=query+" userName = $1 or userMail = $1"
+            query=query+" username = $1 or usermail = $1"
         }
         
         connetion.query(query, [param], function (error, results, fields) {
@@ -415,6 +418,7 @@ exports.getUser = (param) => {
                 reject(error)
                 return
             }
+            console.log(results);
             
             if (typeof results.rows[0] == 'undefined') {
                 reject("User Not found")
@@ -474,6 +478,7 @@ const getUserId = (name) => {
                 reject(error)
                 return
             }
+            console.log(results);
             
             if (typeof results.rows[0] == 'undefined') {
                 reject("user Not found")
