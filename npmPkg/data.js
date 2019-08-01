@@ -368,11 +368,13 @@ exports.getAllSensors = () => {
 
 exports.getFullSensors = () => {
     return new Promise((resolve, reject) => {
-        connetion.query('select *  from gsoc.tbSensors', (error, results, fields) => {
+        connetion.query('select * from gsoc.tbSensors inner join gsoc.tbusers on gsoc.tbSensors.userid = gsoc.tbusers.userid', (error, results, fields) => {
             if (error) {
                 reject(error)
                 return
             }
+            delete results.rows.userpass
+            delete results.rows.usermail
             resolve(results.rows)
             return
         })

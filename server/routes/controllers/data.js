@@ -230,6 +230,9 @@ router.post('/opensite', (req, res) => {
 
 router.post('/closesite', (req, res) => {
     var conn = new Client();
+    conn.on('error',()=>{
+        res.send('fail')
+    })
     conn.on('ready', function () {
         console.log('Client :: ready close');
         conn.exec("export DISPLAY=:0 ; pkill -f chromium-browser", function (err, stream) {
