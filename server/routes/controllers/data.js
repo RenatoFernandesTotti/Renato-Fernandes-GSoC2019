@@ -2,23 +2,16 @@ const router = require('express').Router()
 const GSoC = require('liquidsensors')
 const bodyParser = require('body-parser')
 const response = require('../../lib/response')
-var cors = require('cors');
 const fs = require('fs')
-var Client = require('ssh2').Client
-var copy = require('scp2')
-var Clientscp = require('scp2').Client;
+const Client = require('ssh2').Client
+const Clientscp = require('scp2').Client;
+const keys= require('../../keys')
 
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
     extended: false
 }));
-GSoC.createConnection({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'gsoc',
-    password: 'renato',
-    port: 5432
-})
+GSoC.createConnection(keys)
 
 router.post('/registerRead', (req, res) => {
     GSoC.registerRead(req.body.name, req.body.val, req.body.decimal, req.body.hex).then(result => {
@@ -42,7 +35,7 @@ router.get('/getAllSensors', (req, res) => {
         formatList.forEach(owner => {
             data.forEach(element => {
                 if (owner.name == element.username) {
-                    owner.sensors.push(element.name)
+                    owner.sensors.push({name:element.name,img:element.imgid})
                 }
             });
         });

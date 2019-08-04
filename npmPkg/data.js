@@ -1,5 +1,8 @@
 //Dependancies
-const { Pool, Client } = require('pg')
+const {
+    Pool,
+    Client
+} = require('pg')
 const fs = require('fs')
 const crypto = require('crypto')
 
@@ -20,18 +23,18 @@ var template = {
     database: 'mydb',
     password: 'secretpassword',
     port: 3211,
-  }
+}
 var connetion
 
 //Export module
 var exports = module.exports = {}
 
-exports.con=null 
+exports.con = null
 
-exports.createConnection = async (config,op=true) => {
+exports.createConnection = async (config, op = true) => {
     return new Promise((resolve, reject) => {
         var file = fs.createReadStream(__dirname + '/data.sql')
-        if(op)
+        if (op)
             connetion = exports.con = new Pool(config)
         else
             connetion = exports.con = new Pool()
@@ -53,8 +56,8 @@ exports.createConnection = async (config,op=true) => {
                         resolve()
                     }, 3000)
                 } else {
-                    connetion.query('SET search_path TO gsoc').then(re=>{
-                        
+                    connetion.query('SET search_path TO gsoc').then(re => {
+
                     })
                     resolve('ok')
                 }
@@ -69,24 +72,24 @@ exports.getInfo = (name) => {
             reject("Not connected to a database")
             return
         }
-        
+
         getSensorID(name).then(id => {
-            //connetion.query('select sensorID from gsoc.tbSensors')
-            
+
+
             connetion.query('Select * from gsoc.tbSensors where sensorID = $1', [id], function (error, results, fields) {
-                if (error) 
+                if (error)
                     return reject(error);
-                    
+
                 resolve(results.rows[0])
             });
         })
     })
 }
 
-exports.readUserSensors = (name)=>{
-    return new Promise ((resolve,reject)=>{
-        getUserId(name).then(id=>{
-            connetion.query('select * from gsoc.tbSensors where userID = $1',[id],function (error, results, fields) {
+exports.readUserSensors = (name) => {
+    return new Promise((resolve, reject) => {
+        getUserId(name).then(id => {
+            connetion.query('select * from gsoc.tbSensors where userID = $1', [id], function (error, results, fields) {
                 if (error) reject(error);
                 resolve(results.rows)
             })
@@ -101,7 +104,8 @@ exports.registerSensor = (username, {
     unit = "To be set",
     lat = 0,
     lon = 0,
-    imgId = 1,
+    imgId = "",
+    unitdesc = "To be set"
 } = {}) => {
     return new Promise((resolve, reject) => {
         if (exports.con == "null") {
@@ -112,10 +116,10 @@ exports.registerSensor = (username, {
             reject('No username set')
             return
         }
-        
-        
+
+
         getUserId(username).then(userId => {
-            connetion.query("insert into gsoc.tbSensors (name,description,register,lastUpdate,unit,X,Y,imgId,userId) values($1,$2,now(),now(),$3,$4, $5,$6,$7)", [name, description, unit, lon, lat, imgId, userId], function (error, results, fields) {
+            connetion.query("insert into gsoc.tbSensors (name,description,register,lastUpdate,unit,X,Y,imgId,userId,unitdesd) values($1,$2,now(),now(),$3,$4, $5,$6,$7,$8)", [name, description, unit, lon, lat, imgId, userId, unitdesc], function (error, results, fields) {
                 if (error) {
                     reject(error);
                     return
@@ -134,11 +138,11 @@ exports.registerUser = ({
 } = {}) => {
     return new Promise((resolve, reject) => {
         var vars = []
-        var hash =userPass
+        var hash = userPass
         vars.push(userName)
         vars.push(userMail)
-        for (i=0 ; i<100 ; i++) {
-            hash=crypto.createHash('sha512').update(hash).digest('hex')
+        for (i = 0; i < 100; i++) {
+            hash = crypto.createHash('sha512').update(hash).digest('hex')
         }
         vars.push(hash)
         connetion.query("insert into gsoc.tbusers (userName,userMail,userPass) values($1,$2,$3)", vars, function (error, results, fields) {
@@ -172,7 +176,7 @@ exports.registerRead = (name, value, decimal, hex = false) => {
                     }
                     connetion.query('update gsoc.tbSensors set lastUpdate = now() where sensorID = $1', [id], function (error, results, fields) {
                         if (error) {
-                            reject(connetion.rollback())
+                            reject(error)
                             return
                         }
                         resolve(results.rows)
@@ -194,7 +198,8 @@ exports.editSensor = (name, info = {
     unit: "",
     lon: "",
     lat: "",
-    img:""
+    img: "",
+    unitdesc: ""
 }) => {
     return new Promise((resolve, reject) => {
         getSensorID(name).then(id => {
@@ -202,45 +207,52 @@ exports.editSensor = (name, info = {
                 reject("id not found")
                 return
             }
-            var i =1;
+            var i = 1;
             var updateQuery = "update gsoc.tbSensors set"
             var values = []
             if (info.name != undefined) {
-                updateQuery += ' name = $'+i+','
+                updateQuery += ' name = $' + i + ','
                 values.push(info.name)
                 i++
             }
             if (info.description != undefined) {
-                updateQuery += ' description = $'+i+' ,'
+                updateQuery += ' description = $' + i + ' ,'
                 values.push(info.description)
                 i++
             }
             if (info.ip != undefined) {
-                updateQuery += ' ip = $'+i+' ,'
+                updateQuery += ' ip = $' + i + ' ,'
                 values.push(info.ip)
                 i++
             }
             if (info.unit != undefined) {
-                updateQuery += ' unit = $'+i+' ,'
+                updateQuery += ' unit = $' + i + ' ,'
                 values.push(info.unit)
                 i++
             }
             if (info.lon != undefined && info.lat) {
                 console.log(updateQuery);
-                updateQuery += " X=$"+i+", y=$"+(i+1)+" ,"
+                updateQuery += " X=$" + i + ", y=$" + (i + 1) + " ,"
                 values.push(info.lon)
                 values.push(info.lat)
-                i+=2
+                i += 2
             }
-            if (info.img!=undefined) {
-                updateQuery += " imgId = $"+i+" ,"
+            if (info.img != undefined) {
+                updateQuery += " imgId = $" + i + " ,"
                 values.push(info.img)
                 i++
             }
-            
+            if (info.unitdesc != undefined) {
+                updateQuery += " unitdesd =$" + i + " ,"
+                values.push(info.unitdesc)
+                i++
+            }
+
             updateQuery = updateQuery.substring(0, updateQuery.length - 1);
 
-            updateQuery += " where sensorID = $"+i
+            updateQuery += " where sensorID = $" + i
+            console.log(updateQuery);
+
             values.push(id)
             connetion.query(updateQuery, values, (error, results, fields) => {
                 if (error) reject(error)
@@ -252,16 +264,16 @@ exports.editSensor = (name, info = {
 
 exports.readSensor = (name, datespan = null) => {
     return new Promise((resolve, reject) => {
-        
+
         getSensorID(name).then(id => {
             let date = getDate()
-            
-            
+
+
             let query = "select T1.sensorID, T1.unit, T2.value, T2.date  from gsoc.tbValues T2 inner join gsoc.tbSensors as T1 on T2.sensorID = T1.sensorID where T1.sensorID = $1"
             switch (datespan) {
                 case '1y':
                     query += " and date_part('year', T2.date) between " + (date[2] - 1) + " and " + date[2]
-                    
+
                     break;
                 case '6m':
                     var last = new Date()
@@ -276,38 +288,36 @@ exports.readSensor = (name, datespan = null) => {
                 case '1w':
                     var last = new Date()
                     last.setDate(date[0] - 7)
-                    query += " and T2.date between " + "'" +last.toISOString() + "'" + " and " + "'"+new Date().toISOString()+ "'"
+                    query += " and T2.date between " + "'" + last.toISOString() + "'" + " and " + "'" + new Date().toISOString() + "'"
                     break;
                 case '1d':
                     var last = new Date()
                     last.setDate(date[0] - 1)
-                    query += " and T2.date between " + "'" +last.toISOString() + "'" + " and " + "'"+new Date().toISOString()+ "'"
+                    query += " and T2.date between " + "'" + last.toISOString() + "'" + " and " + "'" + new Date().toISOString() + "'"
                     break;
                 default:
                     break;
             }
             query += ' order by T2.date'
-            
+
             connetion.query(query, [id], (error, results, fields) => {
                 if (error) {
                     return reject(error)
                 }
                 if (results.length == 0) {
-                    return reject({code:0,message:"No values found for sensor:" + name})
+                    return reject({
+                        code: 0,
+                        message: "No values found for sensor:" + name
+                    })
                 }
-                
-                
+
+
                 resolve(results.rows)
             })
         })
     })
 }
 
-exports.generateKml = () => {
-    return new Promise((resolve, reject) => {
-        reject("To be implemented")
-    })
-}
 
 exports.startDemo = (sensorNumber, user, interval = 10) => {
     return new Promise((resolve, reject) => {
@@ -354,7 +364,7 @@ exports.stopDemo = () => {
 
 exports.getAllSensors = () => {
     return new Promise((resolve, reject) => {
-        connetion.query('select gsoc.tbSensors.name , gsoc.tbusers.username  from gsoc.tbSensors inner join gsoc.tbusers on gsoc.tbSensors.userid = gsoc.tbusers.userid', (error, results, fields) => {
+        connetion.query('select gsoc.tbSensors.name , gsoc.tbusers.username, gsoc.tbsensors.imgid  from gsoc.tbSensors inner join gsoc.tbusers on gsoc.tbSensors.userid = gsoc.tbusers.userid', (error, results, fields) => {
             if (error) {
                 reject(error)
                 return
@@ -373,8 +383,13 @@ exports.getFullSensors = () => {
                 reject(error)
                 return
             }
-            delete results.rows.userpass
-            delete results.rows.usermail
+            results.rows.forEach(element => {
+                console.log('asds');
+                
+                delete element.userpass
+                delete element.usermail
+            });
+            console.log('Get full sensors', results.rows);
             resolve(results.rows)
             return
         })
@@ -406,22 +421,21 @@ exports.getSensorPosition = (name) => {
 exports.getUser = (param) => {
     return new Promise((resolve, reject) => {
         console.log(param);
-        
-        var query='Select * from gsoc.tbusers where'
-        if(typeof param == 'number'){
-            query+=" userID = $1"
-        }   
-        else{
-            query=query+" username = $1 or usermail = $1"
+
+        var query = 'Select * from gsoc.tbusers where'
+        if (typeof param == 'number') {
+            query += " userID = $1"
+        } else {
+            query = query + " username = $1 or usermail = $1"
         }
-        
+
         connetion.query(query, [param], function (error, results, fields) {
             if (error) {
                 reject(error)
                 return
             }
             console.log(results);
-            
+
             if (typeof results.rows[0] == 'undefined') {
                 reject("User Not found")
                 return
@@ -433,10 +447,10 @@ exports.getUser = (param) => {
     })
 }
 
-exports.deleteSensor = (name)=>{
-    return new Promise ((resolve,reject)=>{
-        getSensorID(name).then(id=>{
-            connetion.query('delete from gsoc.tbsensors where sensorID = $1',[id],function (error, results, fields) {
+exports.deleteSensor = (name) => {
+    return new Promise((resolve, reject) => {
+        getSensorID(name).then(id => {
+            connetion.query('delete from gsoc.tbsensors where sensorID = $1', [id], function (error, results, fields) {
                 if (error) {
                     reject(error)
                     return
@@ -447,7 +461,7 @@ exports.deleteSensor = (name)=>{
                 }
                 resolve(results.rows[0])
                 return
-    
+
             })
         })
     })
@@ -456,13 +470,13 @@ exports.deleteSensor = (name)=>{
 
 const getSensorID = (name) => {
     return new Promise((resolve, reject) => {
-        
+
         connetion.query('Select sensorID from gsoc.tbSensors where name = $1', [name], function (error, results, fields) {
             if (error) {
                 reject(error)
                 return
             }
-            
+
             if (typeof results.rows[0] == 'undefined') {
                 reject(" sensor Not found")
                 return
@@ -481,7 +495,7 @@ const getUserId = (name) => {
                 return
             }
             console.log(results);
-            
+
             if (typeof results.rows[0] == 'undefined') {
                 reject("user Not found")
                 return

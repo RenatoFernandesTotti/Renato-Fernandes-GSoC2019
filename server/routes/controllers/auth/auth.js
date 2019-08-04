@@ -1,8 +1,6 @@
 const router = require('express').Router()
-var util = require('util');
 const GSoC = require('liquidsensors')
 const bodyParser = require('body-parser')
-const axios = require('axios')
 const uuid = require('uuid/v4')
 const session = require('express-session')
 const FileStore = require('session-file-store')(session);
@@ -12,7 +10,7 @@ const crypto = require('crypto')
 const maxAge = 24 * 60 * 60 * 1000
 const response = require('../../../lib/response')
 const cookieParser = require('cookie-parser')
-
+const keys = require('../../../keys')
 
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
@@ -53,13 +51,7 @@ const user = (name) => {
 }
 
 
-GSoC.createConnection({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'gsoc',
-    password: 'renato',
-    port: 5432
-})
+GSoC.createConnection(keys)
 
 
 
@@ -204,7 +196,8 @@ router.post('/data/registersensor', authMiddleware, (req, res) => {
             imgId: bd.img,
             lat: bd.lat,
             lon: bd.lng,
-            unit: bd.unit
+            unit: bd.unit,
+            unitdesc:bd.unitdesc
         })
         .then(result => {
             response.send(res, {
@@ -259,7 +252,8 @@ router.post('/data/editsensor', authMiddleware, (req, res) => {
             img: bd.img,
             lat: bd.lat,
             lon: bd.lng,
-            unit: bd.unit
+            unit: bd.unit,
+            unitdesc:bd.unitdesc
         })
         .then(result => {
             response.send(res, {
