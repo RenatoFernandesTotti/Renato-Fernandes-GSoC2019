@@ -5,7 +5,7 @@ const response = require('../../lib/response')
 const fs = require('fs')
 const Client = require('ssh2').Client
 const Clientscp = require('scp2').Client;
-const keys= require('../../keys')
+const keys = require('../../keys')
 
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({
@@ -14,6 +14,8 @@ router.use(bodyParser.urlencoded({
 GSoC.createConnection(keys)
 
 router.post('/registerRead', (req, res) => {
+    console.log(req.body);
+    
     GSoC.registerRead(req.body.name, req.body.val, req.body.decimal, req.body.hex).then(result => {
         response.send(res, {
             code: 200
@@ -35,18 +37,19 @@ router.get('/getAllSensors', (req, res) => {
         formatList.forEach(owner => {
             data.forEach(element => {
                 if (owner.name == element.username) {
-                    owner.sensors.push({name:element.name,img:element.imgid})
+                    owner.sensors.push({
+                        name: element.name,
+                        img: element.imgid
+                    })
                 }
             });
         });
-        console.log(formatList);
 
         response.send(res, {
             code: 200,
             result: formatList
         })
     }).catch(error => {
-        console.log(error);
 
         response.send(res, {
             code: 503,
@@ -56,15 +59,15 @@ router.get('/getAllSensors', (req, res) => {
 })
 
 router.get('/getfullsensors', (req, res) => {
-    GSoC.getFullSensors().then(re => {
-        response.send(res, {
-            code: 200,
-            result: re
+    var retorno = new Promise((resolve, reject) => {
+        GSoC.getFullSensors().then(re => {
+            processArray(re, res)
+
         })
     })
+
 })
 router.get('/getSensorInfo', (req, res) => {
-    console.log('Server' + req.query.name);
 
     GSoC.getInfo(req.query.name).then(result => {
         response.send(res, {
@@ -97,7 +100,6 @@ router.get('/readSensor', (req, res) => {
             })
 
         }).catch(err => {
-            console.log(err);
             if (err.code == 0) {
                 response.send(res, {
                     code: 200,
@@ -105,7 +107,6 @@ router.get('/readSensor', (req, res) => {
                 })
                 return
             }
-            console.log('pq nao?');
             response.send(res, {
                 code: 500,
                 error: err
@@ -116,7 +117,6 @@ router.get('/readSensor', (req, res) => {
 
 router.get('/checkUser', (req, res) => {
     GSoC.getUser(req.query.username).then(result => {
-            console.log("result");
 
             response.send(res, {
                 code: 200,
@@ -124,7 +124,6 @@ router.get('/checkUser', (req, res) => {
             })
         })
         .catch(err => {
-            console.log(err);
 
             response.send(res, {
                 code: 200,
@@ -142,80 +141,58 @@ router.get('/beurl', (req, res) => {
 
 
 router.post('/movelg', (req, res) => {
+    console.log("Movelg:",req.body);
+    
     let lat = req.body.lat
     let lng = req.body.lng
     let string = 'flytoview=<LookAt><longitude>' + lng + '</longitude><latitude>' + lat +
         '</latitude><altitude>0</altitude><heading>167.0211046386626</heading><tilt>68.68179673613697</tilt><range>100</range><altitudeMode>relativeToGround</altitudeMode><gx:altitudeMode>relativeToSeaFloor</gx:altitudeMode></LookAt>'
-    console.log(string);
-    console.log(req.body);
-    console.log(Clientscp());
     var teste = new Clientscp({
-        host: req.body.host,
-        username: req.body.username,
-        password: req.body.password,
+        host: process.env.masterIp,
+        username: process.env.user,
+        password: process.env.key,
         path: '/tmp/query.txt'
     })
-    console.log(teste);
-    
+
     fs.writeFile(__dirname + '/query.txt', string, () => {
-        console.log("ok");
-        teste.upload(__dirname + '/query.txt','/tmp/query.txt',(err)=>{
-            console.log(err);
-            
+        teste.upload(__dirname + '/query.txt', '/tmp/query.txt', (err) => {
+
         })
-        teste.on('error',()=>{
-            console.log('jere');
+        teste.on('error', () => {
             res.send('fail')
-            
+
         })
-        teste.on('end',()=>{
+        teste.on('end', () => {
             res.send('ok')
         })
-        // teste.scp(__dirname + '/query.txt', {
-        //     host: req.body.host,
-        //     username: req.body.username,
-        //     password: req.body.password,
-        //     path: '/tmp/query.txt'
-        // }, function (err) {
-        //     if (!err) {
-        //         res.send('ok')
-        //     } else {
-        //         res.send('not ok')
-        //     }
 
-
-        // })
     })
 
 })
 
 router.post('/opensite', (req, res) => {
-    console.log(req.body);
-
+    console.log("POST /opensite",req.body);
+    
     var conn = new Client();
     conn.on('error', (err) => {
             res.send(err)
         })
         .on('ready', function () {
-            console.log('Client :: ready');
-            conn.exec("export DISPLAY=:0 ; chromium-browser --kiosk " + req.body.serverurl + " </dev/null >/dev/null 2>&1 &", function (err, stream) {
+            conn.exec("export DISPLAY=:0 ; chromium-browser --kiosk " +process.env.localip + req.body.serverurl + " </dev/null >/dev/null 2>&1 &", function (err, stream) {
                 if (err) throw err;
                 stream.on('close', function (code, signal) {
-                    console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
                     conn.end();
                     res.send('ok')
                     return
                 }).on('data', function (data) {
-                    console.log('STDOUT: ' + data);
                 }).stderr.on('data', function (data) {
-                    console.log('STDERR: ' + data);
                 });
             });
         }).connect({
-            host: req.body.lgurl,
+            host: process.env.slaveIp,
             port: 22,
-            username: req.body.lguser,
-            password: req.body.lgkey
+            username: process.env.user,
+            password: process.env.key
         });
 
 
@@ -223,30 +200,42 @@ router.post('/opensite', (req, res) => {
 
 router.post('/closesite', (req, res) => {
     var conn = new Client();
-    conn.on('error',()=>{
+    conn.on('error', () => {
         res.send('fail')
     })
     conn.on('ready', function () {
-        console.log('Client :: ready close');
         conn.exec("export DISPLAY=:0 ; pkill -f chromium-browser", function (err, stream) {
             if (err) throw err;
             stream.on('close', function (code, signal) {
-                console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
                 conn.end();
                 res.send('ok')
                 return
             }).on('data', function (data) {
-                console.log('STDOUT: ' + data);
             }).stderr.on('data', function (data) {
-                console.log('STDERR: ' + data);
             });
         });
     }).connect({
-        host: req.body.lgurl,
+        host: process.env.slaveIp,
         port: 22,
-        username: req.body.lguser,
-        password: req.body.lgkey
+        username: process.env.user,
+        password: process.env.key
     });
 })
+
+
+async function processArray(array, res) {
+
+    for (const element of array) {
+        await GSoC.readSensor(element.name).then(r => {
+            element.value = r[0].value
+            element.unit = r[0].unit
+        });
+    }
+
+    response.send(res, {
+        code: 200,
+        result: array
+    })
+}
 
 module.exports = router

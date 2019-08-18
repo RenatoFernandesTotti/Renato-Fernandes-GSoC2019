@@ -120,4 +120,3 @@ The web application will be available in the 8888 port by default
 [eric repo]:(https://github.com/xemyst/liquid-galaxy-kml-uploader)
 
 [frontend]:(https://github.com/RenatoFernandesTotti/Renato-Fernandes-GSoC2019-FrontEndApp)
->>>>>>> Stashed changes

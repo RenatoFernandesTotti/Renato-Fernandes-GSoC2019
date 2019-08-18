@@ -3,9 +3,9 @@ const app = express()
 const http = require('http')
 const cors = require('cors')
 const localtunnel = require('localtunnel')
-var path = require('path');
-var serveStatic = require('serve-static');
-var history = require('connect-history-api-fallback');
+const dotenv = require('dotenv');
+var ifaces = require('os').networkInterfaces();
+dotenv.config();
 
 
 
@@ -41,16 +41,15 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.get('/',(req,res)=>{    
+app.get('/', (req, res) => {
     res.redirect('/front')
 })
 
 
 app.use(express.static('dist'));
 
-app.use('/front', function ( req, res, next ) {
-    console.log(req.url);
-    
+app.use('/front', function (req, res, next) {
+
     if (/\/[^.]*$/.test(req.url)) {
         res.sendFile(__dirname + '/dist/index.html');
     } else {
@@ -65,7 +64,20 @@ app.use(require('./routes/router'))
 var server = http.createServer(app);
 
 server.listen(8888, () => {
-    console.log("listening on:8888");
+
+    var adresses = Object.keys(ifaces).reduce(function (result, dev) {
+        return result.concat(ifaces[dev].reduce(function (result, details) {
+            return result.concat(details.family === 'IPv4' && !details.internal ? [details.address] : []);
+        }, []));
+    });
+    console.log(adresses);
+    
+    console.log('env variables\n',
+        "Master IP:", process.env.masterIp, "\n",
+        "Slave IP:", process.env.slaveIp, "\n",
+        "key:", process.env.key, '\n',
+        'User:', process.env.user, '\n',
+    );
 
 })
 
@@ -74,25 +86,24 @@ var tunnel = localtunnel(8888, {
     subdomain: "renatogsoc"
 }, function (err, tunnel) {
     if (err) {
-        console.log(err);
 
     }
-    process.env.URL= tunnel.url
-    console.log("Public url: \n" + tunnel.url);
+    process.env.URL = tunnel.url
+    console.log(tunnel.url);
+
 
 });
 
 tunnel.on('close', function () {
-    tunnel = localtunnel(8888, {
-        subdomain: "renatogsoc"
-    })
+    console.log('Local tunnel closed');
+
 })
 tunnel.on('error', function (err) {
-    console.log(err);
+    console.log("Localtunnel error:", err);
 
 })
 tunnel.on('request', function (info) {
-    // console.log(info);
-    // console.log(tunnel);
+    console.log("Localtunnel request:", info);
+
 
 })

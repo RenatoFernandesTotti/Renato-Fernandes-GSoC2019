@@ -69,3 +69,7 @@ facensKey\.min\.js
 sessions/
 
 keys\.min\.js
+
+keys.js
+
+.env
