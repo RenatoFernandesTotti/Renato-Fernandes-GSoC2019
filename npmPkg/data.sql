@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS gsoc.tbsensors (
   unit VARCHAR(255) NULL DEFAULT NULL,
   imgId VARCHAR(255) NULL DEFAULT NULL,
   userID INT NOT NULL,
+  mock boolean,
+  unitdesd varchar(255),
   PRIMARY KEY (sensorID),
   CONSTRAINT UserID
     FOREIGN KEY (userID)
