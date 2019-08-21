@@ -2,7 +2,6 @@
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/RenatoFernandesTotti/Renato-Fernandes-GSoC2019.svg?style=flat-square&logo=GitHub) ![npm](https://img.shields.io/npm/dt/liquidsensors.svg?style=flat-square&logo=NPM) ![npm](https://img.shields.io/npm/v/liquidsensors.svg?style=flat-square)
 
-
 ## Proposal
 
 Javascript library to acquire and display data from sensors
@@ -24,6 +23,9 @@ Here you can find all of the library code.
 If oy want to see the library docs just click [here](https://www.npmjs.com/package/liquidsensors)
 
 ----
+## Before anything
+
+clone both repos, this one and the frontend app
 
 ## Server setup
 
