@@ -23,6 +23,7 @@ Here you can find all of the library code.
 If oy want to see the library docs just click [here](https://www.npmjs.com/package/liquidsensors)
 
 ----
+
 ## Before anything
 
 clone both repos, this one and the frontend app
@@ -46,6 +47,8 @@ var k={
 module.exports = k
 ```
 
+The connection string is a url based connection often provide by online postgre sites
+
 or
 
 ```javascript
@@ -60,7 +63,9 @@ var k={
 module.exports = k
 ```
 
-Remenber to always export the keys with `module.exports`
+**ALL FIELDS ARE NECESSARY**
+
+Remember to always export the keys with `module.exports`
 
 ### Liquid galaxy setup
 
@@ -85,9 +90,13 @@ This NEEDS to have the following syntax
 `http://{ip}:{port}`
 just as seen above in the example
 
-After setting up all of the variables just compile de site with `npm run build` inside the frontend folder and copy the `dist` file to the `server` file in here.
+After setting up all of the variables just run `npm install` and compile de site with `npm run build` inside the frontend folder and copy the `dist` folder to the `server` folder in here.
 
-For this server create a .env file inside the server folder containing the following
+````bash
+sudo cp -r /dist ../Renato-Fernandes-GSoC2019/server
+````
+
+For this server create a .env file inside the server folder in this repo folder containing the following
 
 ````env
 masterIp=192.168.0.155
@@ -127,7 +136,9 @@ Is the same as the VUE_APP_ericbe
 
 ## Running the server
 
-After setting up everything, go inside the server folder and run `npm run dev` to start the server
+After setting up everything,  go inside the server folder and  run `sudo npm i` and after that `npm run dev` to start the server
+
+**obs**: You need nodemon to run the server. To install it just run `sudp npm i -g nodemon`
 
 The web application will be available in the 8888 port by default
 
