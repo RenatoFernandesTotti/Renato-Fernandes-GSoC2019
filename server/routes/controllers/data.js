@@ -158,11 +158,15 @@ router.post('/movelg', (req, res) => {
         teste.upload(__dirname + '/query.txt', '/tmp/query.txt', (err) => {
 
         })
-        teste.on('error', () => {
+        teste.on('error', (err) => {
+            console.log("err",err);
+            
             res.send('fail')
 
         })
         teste.on('end', () => {
+            console.log("ok");
+            
             res.send('ok')
         })
 
@@ -227,8 +231,10 @@ async function processArray(array, res) {
 
     for (const element of array) {
         await GSoC.readSensor(element.name).then(r => {
+            if(r.length!=0){
             element.value = r[0].value
             element.unit = r[0].unit
+            }
         });
     }
 

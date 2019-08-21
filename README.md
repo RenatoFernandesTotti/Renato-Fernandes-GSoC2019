@@ -66,11 +66,6 @@ Inside said file you will find the following content:
 ```env
 VUE_APP_backEnd=
 VUE_APP_ericbe=http://192.168.0.155:8888
-VUE_APP_masterIp=192.168.0.155
-VUE_APP_slaveIp=192.168.0.141
-VUE_APP_key=123456
-VUE_APP_user=user
-VUE_APP_localip=http://192.168.0.187:8888
 ```
 
 Just change the ip for each line following this list
@@ -86,28 +81,49 @@ This NEEDS to have the following syntax
 `http://{ip}:{port}`
 just as seen above in the example
 
-#### VUE_APP_masterIp
+After setting up all of the variables just compile de site with `npm run build` inside the frontend folder and copy the `dist` file to the `server` file in here.
+
+For this server create a .env file inside the server folder containing the following
+
+````env
+masterIp=192.168.0.155
+slaveIp=192.168.0.141
+key=lq
+user=lg
+localip=http://192.168.0.191:8888
+kmlbe=http://localhost:8080
+````
+
+#### masterIp
 
 The ip to the master node from a liquid galaxy installation
 
-#### VUE_APP_slaveIp
+#### slaveIp
 
 The ip to the leftmost node in a liquidgalaxy installation
 
-#### VUE_APP_key
+#### key
 
 The password for the computers inside a liquid galaxy installation
 
-#### VUE_APP_user
+#### user
 
 The user name for the pcs inside a liquid galaxy installation
 
-#### VUE_APP_localip
+#### localip
 
 The ip from the machine where this serve is going to run.
-**This also needs the same syntax as the ericbe variable**
+**This also needs the same syntax as the VUE_APP_ericbe variable**
 
-After setting up all of the variables just compile de site with `npm run build` inside the frontend folder and copy the `dist` file to the `server` file in here.
+#### kmlbe
+
+Is the same as the VUE_APP_ericbe
+
+----
+
+## Important
+
+If you will use the assistant integration do not forget to make a post to this server using a public url (ngrok or localtunnel)
 
 ----
 
