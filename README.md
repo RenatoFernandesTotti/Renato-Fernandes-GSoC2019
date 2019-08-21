@@ -33,10 +33,12 @@ You will need a conection with a postgre database, just create a new file inside
 
 the keys.js file needs to contain your credentials to the database. The two tested file format are listed below
 
+Be sure to have a instance of a postgre database, please follow the instrctions on the postgre site [here](https://www.postgresql.org/docs/9.3/tutorial-install.html)
+
 ```javascript
 var k={
     connectionString: '{Your string}',
-    ssl: true, 
+    ssl: true,
 }
 
 module.exports = k
@@ -118,12 +120,6 @@ The ip from the machine where this serve is going to run.
 #### kmlbe
 
 Is the same as the VUE_APP_ericbe
-
-----
-
-## Important
-
-If you will use the assistant integration do not forget to make a post to this server using a public url (ngrok or localtunnel)
 
 ----
 
