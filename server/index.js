@@ -81,29 +81,3 @@ server.listen(8888, () => {
 
 })
 
-
-var tunnel = localtunnel(8888, {
-    subdomain: "renatogsoc"
-}, function (err, tunnel) {
-    if (err) {
-
-    }
-    process.env.URL = tunnel.url
-    console.log(tunnel.url);
-
-
-});
-
-tunnel.on('close', function () {
-    console.log('Local tunnel closed');
-
-})
-tunnel.on('error', function (err) {
-    console.log("Localtunnel error:", err);
-
-})
-tunnel.on('request', function (info) {
-    console.log("Localtunnel request:", info);
-
-
-})
