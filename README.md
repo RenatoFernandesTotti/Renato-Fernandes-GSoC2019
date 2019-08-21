@@ -20,19 +20,19 @@ Below this section you can find a documentation on how to setup and use this ser
 **npmPkg**
 Here you can find all of the library code.
 
-If oy want to see the library docs just click [here](https://www.npmjs.com/package/liquidsensors)
+If you want to see the library docs just click [here](https://www.npmjs.com/package/liquidsensors)
 
 ----
 
 ## Before anything
 
-clone both repos, this one and the frontend app
+Clone both repos, this one and the frontend app
 
 ## Server setup
 
 ### Base setup
 
-You will need a conection with a postgre database, just create a new file inside de `server` folder with the name `keys.js`.
+You will need a connection with a postgre database, just create a new file inside the `server` folder with the name `keys.js`.
 
 the keys.js file needs to contain your credentials to the database. The two tested file format are listed below
 
@@ -69,8 +69,7 @@ Remember to always export the keys with `module.exports`
 
 ### Liquid galaxy setup
 
-Inside the [frontend repo][frontend] you will find a file named .env.production
-Inside said file you will find the following content:
+Inside the [frontend repo][frontend] you will find a file named .env.production which contains:
 
 ```env
 VUE_APP_backEnd=
@@ -85,7 +84,7 @@ Where this server is running, if you run directly from this server just leave em
 
 #### VUE_APP_ericbe
 
-The ip to the kmlwriter, developed by eric [here][eric repo]
+The ip to the kmlwriter, developed by eric [here](https://github.com/xemyst/liquid-galaxy-kml-uploader)
 This NEEDS to have the following syntax
 `http://{ip}:{port}`
 just as seen above in the example
